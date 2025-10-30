@@ -16,6 +16,8 @@ export default function Home() {
     })
   );
 
+  const testAi = useMutation(trpc.testAi.mutationOptions());
+
   return (
     <div className="min-h-screen min-w-screen flex items-center justify-center flex-col gap-4">
       <h1>Protected route</h1>
@@ -23,6 +25,10 @@ export default function Home() {
       <Button onClick={() => create.mutate()} disabled={create.isPending}>
         {create.isPending ? "Creating..." : "Create Workflow"}
       </Button>
+      <Button onClick={() => testAi.mutate()} disabled={testAi.isPending}>
+        {testAi.isPending ? "Testing..." : "Test AI"}
+      </Button>
+      <div>{JSON.stringify(testAi.data)}</div>
     </div>
   );
 }
