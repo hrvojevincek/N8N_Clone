@@ -13,6 +13,11 @@ export const execute = inngest.createFunction(
       system:
         "You are a helpful assistant that can answer questions and help with tasks.",
       prompt: "What is the capital of France?",
+      experimental_telemetry: {
+        isEnabled: true,
+        recordInputs: true,
+        recordOutputs: true,
+      },
     });
 
     return steps;
