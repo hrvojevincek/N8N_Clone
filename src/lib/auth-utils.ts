@@ -15,7 +15,7 @@ export const requireAuth = async () => {
 export const requireUnauth = async () => {
   const session = await auth.api.getSession({ headers: await headers() });
 
-  if (!session) {
+  if (session) {
     redirect("/");
   }
 };
