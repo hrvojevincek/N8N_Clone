@@ -20,11 +20,11 @@ import {
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
-  SidebarSeparator,
-  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { useRouter, usePathname } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
+import { useHasActiveSubscription } from "@/features/subscriptions/hooks/use-subscriptions";
+import { useQueryClient } from "@tanstack/react-query";
 
 const menuItems = [
   {
@@ -52,6 +52,8 @@ const menuItems = [
 const AppSidebar = () => {
   const router = useRouter();
   const pathname = usePathname();
+  const queryClient = useQueryClient();
+  const { hasActiveSubscription, isLoading } = useHasActiveSubscription();
 
   return (
     <Sidebar collapsible="icon">
@@ -101,19 +103,21 @@ const AppSidebar = () => {
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
+          {!hasActiveSubscription && !isLoading && (
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                onClick={() => authClient.checkout({ slug: "n8n-clone" })}
+                className="gap-x-4 h-10 px-4"
+                tooltip="Upgrade to Pro"
+              >
+                <StarIcon className="h-4 w-4" />
+                <span>Upgrade to Pro</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          )}
           <SidebarMenuItem>
             <SidebarMenuButton
-              onAbort={() => {}}
-              className="gap-x-4 h-10 px-4"
-              tooltip="Upgrade to Pro"
-            >
-              <StarIcon className="h-4 w-4" />
-              <span>Upgrade to Pro</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              onAbort={() => {}}
+              onClick={() => authClient.customer.portal()}
               className="gap-x-4 h-10 px-4"
               tooltip="Billing Portal"
             >
@@ -123,15 +127,17 @@ const AppSidebar = () => {
           </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton
-              onAbort={() =>
-                authClient.signOut({
+              onClick={async () => {
+                queryClient.removeQueries({ queryKey: ["subscriptions"] });
+
+                await authClient.signOut({
                   fetchOptions: {
                     onSuccess: () => {
                       router.push("/login");
                     },
                   },
-                })
-              }
+                });
+              }}
               className="gap-x-4 h-10 px-4"
               tooltip="Sign Out"
             >
