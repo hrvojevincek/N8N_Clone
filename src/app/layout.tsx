@@ -3,6 +3,7 @@ import { Noto_Sans } from "next/font/google";
 import "./globals.css";
 import { TRPCReactProvider } from "@/trpc/client";
 import { Toaster } from "sonner";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 const notoSans = Noto_Sans({
   variable: "--font-noto-sans",
@@ -23,7 +24,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${notoSans.variable} antialiased`}>
         <TRPCReactProvider>
-          {children} <Toaster />
+          <NuqsAdapter>
+            {children} <Toaster />
+          </NuqsAdapter>
         </TRPCReactProvider>
       </body>
     </html>
