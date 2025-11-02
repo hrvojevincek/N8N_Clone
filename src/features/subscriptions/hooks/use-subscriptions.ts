@@ -19,8 +19,6 @@ export const useSubscriptions = () => {
 export const useHasActiveSubscription = () => {
   const { data: customerState, isLoading, ...rest } = useSubscriptions();
 
-  console.log("customerState", customerState);
-
   const hasActiveSubscription =
     customerState?.activeSubscriptions &&
     customerState.activeSubscriptions.length > 0;
