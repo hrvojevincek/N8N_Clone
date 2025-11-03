@@ -14,8 +14,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { NodeType } from "@/generated/prisma/enums";
-import { Separator } from "@radix-ui/react-separator";
-import { Button } from "./ui/button";
+import { Separator } from "./ui/separator";
 
 export type NodeTypeOption = {
   type: NodeType;
@@ -26,7 +25,7 @@ export type NodeTypeOption = {
 
 const triggerNodes: NodeTypeOption[] = [
   {
-    type: NodeType.INITIAL,
+    type: NodeType.MANUAL_TRIGGER,
     label: "Trigger manually",
     description:
       "Runs the flow on clicking a button. Good for getting started.",
@@ -68,35 +67,36 @@ export function NodeSelector({
           toast.error("Only one manual trigger is allowed");
           return;
         }
-
-        setNodes((nodes) => {
-          const hasInitialTrigger = nodes.some(
-            (node) => node.type === NodeType.INITIAL
-          );
-
-          const centerX = window.innerWidth / 2;
-          const centerY = window.innerHeight / 2;
-
-          const flowPosition = screenToFlowPosition({
-            x: centerX + (Math.random() - 0.5) * 200,
-            y: centerY + (Math.random() - 0.5) * 200,
-          });
-
-          const newNode = {
-            id: createId(),
-            data: {},
-            position: flowPosition,
-            type: selection.type,
-          };
-
-          if (hasInitialTrigger) {
-            return [newNode];
-          }
-
-          return [...nodes, newNode];
-        });
-        onOpenChange(false);
       }
+
+      setNodes((nodes) => {
+        const hasInitialTrigger = nodes.some(
+          (node) => node.type === NodeType.INITIAL
+        );
+
+        const centerX = window.innerWidth / 2;
+        const centerY = window.innerHeight / 2;
+
+        const flowPosition = screenToFlowPosition({
+          x: centerX + (Math.random() - 0.5) * 200,
+          y: centerY + (Math.random() - 0.5) * 200,
+        });
+
+        const newNode = {
+          id: createId(),
+          data: {},
+          position: flowPosition,
+          type: selection.type,
+        };
+
+        if (hasInitialTrigger) {
+          return [newNode];
+        }
+
+        return [...nodes, newNode];
+      });
+
+      onOpenChange(false);
     },
     [getNodes, setNodes, onOpenChange, screenToFlowPosition]
   );
@@ -145,7 +145,9 @@ export function NodeSelector({
             );
           })}
         </div>
-        <Separator className="my-4" />
+
+        <Separator orientation="horizontal" />
+
         <div>
           {executionNodes.map((nodeType) => {
             const Icon = nodeType.icon;
