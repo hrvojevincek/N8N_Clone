@@ -13,6 +13,7 @@
   "dependencies": {
     "@ai-sdk/google": "^2.0.25",
     "@hookform/resolvers": "^5.2.2",
+    "@paralleldrive/cuid2": "^3.0.4",
     "@polar-sh/better-auth": "^1.2.1",
     "@polar-sh/sdk": "^0.40.3",
     "@prisma/client": "^6.18.0",
