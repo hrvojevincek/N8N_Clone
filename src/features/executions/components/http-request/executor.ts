@@ -2,6 +2,7 @@ import { NodeExecutor } from "../../types";
 import { NonRetriableError } from "inngest";
 import ky, { type Options as KyOptions } from "ky";
 import Handlebars from "handlebars";
+import { httpRequestChannel } from "@/inngest/channels/http-request";
 
 Handlebars.registerHelper("json", (context) => {
   const jsonString = JSON.stringify(context, null, 2);
@@ -21,74 +22,115 @@ export const httpRequestExecutor: NodeExecutor<HttpRequestData> = async ({
   data,
   context,
   step,
+  publish,
 }) => {
-  //TODO: publish "loading" state  for manula trigger
+  await publish(
+    httpRequestChannel().status({
+      nodeId,
+      status: "loading",
+    })
+  );
+
   if (!data.endpoint) {
+    await publish(
+      httpRequestChannel().status({
+        nodeId,
+        status: "error",
+      })
+    );
     throw new NonRetriableError("HTTP Request node: No endpoint configured");
   }
   if (!data.variableName) {
+    await publish(
+      httpRequestChannel().status({
+        nodeId,
+        status: "error",
+      })
+    );
     throw new NonRetriableError(
       "HTTP Request node: No variable name configured"
     );
   }
   if (!data.method) {
+    await publish(
+      httpRequestChannel().status({
+        nodeId,
+        status: "error",
+      })
+    );
     throw new NonRetriableError("HTTP Request node: No method configured");
   }
 
-  const result = await step.run("http-request", async () => {
-    let endpoint: string;
-    try {
-      endpoint = Handlebars.compile(data.endpoint)(context);
-    } catch (error) {
-      throw new NonRetriableError(
-        `Failed to render endpoint template: ${error instanceof Error ? error.message : String(error)}`
-      );
-    }
+  try {
+    const result = await step.run("http-request", async () => {
+      let endpoint: string;
+      try {
+        endpoint = Handlebars.compile(data.endpoint)(context);
+      } catch (error) {
+        throw new NonRetriableError(
+          `Failed to render endpoint template: ${
+            error instanceof Error ? error.message : String(error)
+          }`
+        );
+      }
 
-    // Validate rendered endpoint is a valid URL
-    try {
-      new URL(endpoint);
-    } catch (error) {
-      throw new NonRetriableError(
-        `Rendered endpoint is not a valid URL: ${endpoint}`
-      );
-    }
+      try {
+        new URL(endpoint);
+      } catch {
+        throw new NonRetriableError(
+          `Rendered endpoint is not a valid URL: ${endpoint}`
+        );
+      }
 
-    const method = data.method;
+      const method = data.method;
 
-    const options: KyOptions = { method };
+      const options: KyOptions = { method };
 
-    if (["POST", "PUT", "PATCH"].includes(method)) {
-      const resolved = Handlebars.compile(data.body || {})(context);
-      JSON.parse(resolved);
+      if (["POST", "PUT", "PATCH"].includes(method)) {
+        const resolved = Handlebars.compile(data.body || {})(context);
+        JSON.parse(resolved);
 
-      options.body = resolved;
-      options.headers = {
-        "Content-Type": "application/json",
+        options.body = resolved;
+        options.headers = {
+          "Content-Type": "application/json",
+        };
+      }
+
+      const response = await ky(endpoint, options);
+      const contentType = response.headers.get("content-type");
+      const responseData = contentType?.includes("application/json")
+        ? await response.json()
+        : await response.text();
+
+      const responsePayload = {
+        httpResponse: {
+          statusText: response.statusText,
+          status: response.status,
+          data: responseData,
+        },
       };
-    }
 
-    const response = await ky(endpoint, options);
-    const contentType = response.headers.get("content-type");
-    const responseData = contentType?.includes("application/json")
-      ? await response.json()
-      : await response.text();
+      return {
+        ...context,
+        [data.variableName]: responsePayload,
+      };
+    });
 
-    const responsePayload = {
-      httpResponse: {
-        statusText: response.statusText,
-        status: response.status,
-        data: responseData,
-      },
-    };
+    await publish(
+      httpRequestChannel().status({
+        nodeId,
+        status: "success",
+      })
+    );
 
-    return {
-      ...context,
-      [data.variableName]: responsePayload,
-    };
-  });
-
-  //TODO: publish "succes" state for manual trigger
-
-  return result;
+    return result;
+  } catch (error) {
+    await publish(
+      httpRequestChannel().status({
+        nodeId,
+        status: "error",
+      })
+    );
+    throw error;
+  }
 };
