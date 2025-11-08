@@ -119,7 +119,7 @@ export const GeminiDialog = ({
                   </FormControl>
                   <FormDescription>
                     Use this name to reference the result in other nodes:{" "}
-                    {`{{${watchVariableName}.response.data}}`}
+                    {`{{${watchVariableName}.aiResponse.text}}`}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
