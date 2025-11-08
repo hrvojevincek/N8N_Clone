@@ -1,25 +1,44 @@
+import { NonRetriableError } from "inngest";
 import { inngest } from "./client";
-import { createGoogleGenerativeAI, google } from "@ai-sdk/google";
-import { generateText } from "ai";
+import prisma from "@/lib/database";
+import { topologicalSort } from "./utils";
+import { getExecutor } from "@/features/executions/lib/executor-registry";
 
-const googleAI = createGoogleGenerativeAI();
-
-export const execute = inngest.createFunction(
-  { id: "execute" },
-  { event: "execute/ai" },
+export const executeWorkflow = inngest.createFunction(
+  { id: "execute-workflow" },
+  { event: "workflow/execute.workflow" },
   async ({ event, step }) => {
-    const { steps } = await step.ai.wrap("gemini-generate-text", generateText, {
-      model: googleAI("gemini-2.5-flash"),
-      system:
-        "You are a helpful assistant that can answer questions and help with tasks.",
-      prompt: "What is the capital of France?",
-      experimental_telemetry: {
-        isEnabled: true,
-        recordInputs: true,
-        recordOutputs: true,
-      },
-    });
+    const { workflowId } = event.data;
 
-    return steps;
+    if (!workflowId) {
+      throw new NonRetriableError("Workflow ID is required");
+    }
+
+    const sortedNodes = await step.run("prepare-workflow", async () => {
+      const workflow = await prisma.workflow.findUniqueOrThrow({
+        where: { id: workflowId },
+        include: {
+          nodes: true,
+          connections: true,
+        },
+      });
+
+      return topologicalSort(workflow.nodes, workflow.connections);
+    });
+    //initialize context with any initial data from the trigger
+    let context = event.data.initialData || {};
+
+    //execute each node
+    for (const node of sortedNodes) {
+      const executor = getExecutor(node.type);
+
+      context = await executor({
+        data: node.data as Record<string, unknown>,
+        nodeId: node.id,
+        context,
+        step,
+      });
+    }
+    return { workflowId, result: context };
   }
 );
