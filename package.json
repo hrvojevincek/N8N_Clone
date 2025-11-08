@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "inngest:dev": "inngest-cli dev",
-    "dev:all": "mprocs"
+    "dev:all": "dotenv -- mprocs",
+    "ngrok:dev": "ngrok http --url=becoming-tick-early.ngrok-free.app 3000"
   },
   "dependencies": {
     "@ai-sdk/google": "^2.0.25",
