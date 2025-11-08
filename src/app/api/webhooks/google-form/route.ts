@@ -31,6 +31,11 @@ export async function POST(request: NextRequest) {
         googleForm: formData,
       },
     });
+
+    return NextResponse.json(
+      { success: true, message: "Workflow triggered successfully" },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Error processing Google Form webhook", error);
     return NextResponse.json(
