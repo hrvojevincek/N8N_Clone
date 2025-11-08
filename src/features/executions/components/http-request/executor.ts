@@ -36,7 +36,24 @@ export const httpRequestExecutor: NodeExecutor<HttpRequestData> = async ({
   }
 
   const result = await step.run("http-request", async () => {
-    const endpoint = Handlebars.compile(data.endpoint)(context);
+    let endpoint: string;
+    try {
+      endpoint = Handlebars.compile(data.endpoint)(context);
+    } catch (error) {
+      throw new NonRetriableError(
+        `Failed to render endpoint template: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
+
+    // Validate rendered endpoint is a valid URL
+    try {
+      new URL(endpoint);
+    } catch (error) {
+      throw new NonRetriableError(
+        `Rendered endpoint is not a valid URL: ${endpoint}`
+      );
+    }
+
     const method = data.method;
 
     const options: KyOptions = { method };
