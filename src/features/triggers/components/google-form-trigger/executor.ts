@@ -12,14 +12,25 @@ export const googleFormTriggerExecutor: NodeExecutor<
       status: "loading",
     })
   );
-  const result = await step.run("google-form-trigger", async () => context);
+  
+  try {
+    const result = await step.run("google-form-trigger", async () => context);
 
-  await publish(
-    googleFormTriggerChannel().status({
-      nodeId,
-      status: "success",
-    })
-  );
+    await publish(
+      googleFormTriggerChannel().status({
+        nodeId,
+        status: "success",
+      })
+    );
 
-  return result;
+    return result;
+  } catch (error) {
+    await publish(
+      googleFormTriggerChannel().status({
+        nodeId,
+        status: "error",
+      })
+    );
+    throw error;
+  }
 };
