@@ -44,7 +44,7 @@ export const httpRequestExecutor: NodeExecutor<HttpRequestData> = async ({
       ? await response.json()
       : await response.text();
 
-    const responePayload = {
+    const responsePayload = {
       httpResponse: {
         statusText: response.statusText,
         status: response.status,
@@ -55,13 +55,13 @@ export const httpRequestExecutor: NodeExecutor<HttpRequestData> = async ({
     if (data.variableName) {
       return {
         ...context,
-        [data.variableName]: responePayload,
+        [data.variableName]: responsePayload,
       };
     }
 
     return {
       ...context,
-      ...responePayload,
+      ...responsePayload,
     };
   });
 
