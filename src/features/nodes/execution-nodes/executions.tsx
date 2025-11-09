@@ -119,7 +119,9 @@ export const ExecutionItem = ({
     <>
       {data.workflow.name} &bull; Started{" "}
       {formatDistanceToNow(data.startedAt, { addSuffix: true })}
-      {duration !== null && <>` &bull; Duration ${duration}ms`</>}
+      {formatDistanceToNow(data.startedAt, { addSuffix: true })}
+      {duration !== null && <> &bull; Duration {duration}ms</>}
+     </>
     </>
   );
 
