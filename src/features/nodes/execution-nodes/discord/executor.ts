@@ -3,7 +3,7 @@ import Handlebars from "handlebars";
 import { decode } from "html-entities";
 import { NonRetriableError } from "inngest";
 import ky from "ky";
-import { NodeExecutor } from "../../types";
+import { NodeExecutor } from "../../../executions/types";
 
 Handlebars.registerHelper("json", (context) => {
   const jsonString = JSON.stringify(context, null, 2);
