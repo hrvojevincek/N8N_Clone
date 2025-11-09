@@ -1,11 +1,11 @@
 import { InitialNode } from "@/components/initial-node";
-import { DiscordNode } from "@/features/executions/components/discord/node";
-import { GeminiNode } from "@/features/executions/components/gemini/node";
-import { HttpRequestNode } from "@/features/executions/components/http-request/node";
-import { SlackNode } from "@/features/executions/components/slack/node";
-import { GoogleFormTrigger } from "@/features/triggers/components/google-form-trigger/node";
-import { ManualTriggerNode } from "@/features/triggers/components/manual-trigger/node";
-import { StripeTriggerNode } from "@/features/triggers/components/stripe-trigger/node";
+import { DiscordNode } from "@/features/nodes/execution-nodes/discord/node";
+import { GeminiNode } from "@/features/nodes/execution-nodes/gemini/node";
+import { HttpRequestNode } from "@/features/nodes/execution-nodes/http-request/node";
+import { SlackNode } from "@/features/nodes/execution-nodes/slack/node";
+import { GoogleFormTrigger } from "@/features/nodes/trigger-nodes/google-form-trigger/node";
+import { ManualTriggerNode } from "@/features/nodes/trigger-nodes/manual-trigger/node";
+import { StripeTriggerNode } from "@/features/nodes/trigger-nodes/stripe-trigger/node";
 import { NodeType } from "@/generated/prisma/enums";
 import type { NodeTypes } from "@xyflow/react";
 

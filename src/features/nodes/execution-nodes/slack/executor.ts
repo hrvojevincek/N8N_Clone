@@ -3,7 +3,7 @@ import Handlebars from "handlebars";
 import { decode } from "html-entities";
 import { NonRetriableError } from "inngest";
 import ky from "ky";
-import { NodeExecutor } from "../../types";
+import { NodeExecutor } from "../../../executions/types";
 import { slackChannel } from "@/inngest/channels/slack";
 
 Handlebars.registerHelper("json", (context) => {

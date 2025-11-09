@@ -1,22 +1,23 @@
 "use client";
 
-import { DISCORD_CHANNEL_NAME } from "@/inngest/channels/discord";
+import { GEMINI_CHANNEL_NAME } from "@/inngest/channels/gemini";
 import { NodeProps, useReactFlow, type Node } from "@xyflow/react";
 import { memo, useState } from "react";
-import { useNodeStatus } from "../../hooks/use-node-status";
+import { useNodeStatus } from "../../../executions/hooks/use-node-status";
 import { BaseExecutionNode } from "../base-execution-node";
-import { fetchDiscordRealtimeToken } from "./action";
-import { DiscordDialog, DiscordFormValues } from "./dialog";
+import { GeminiDialog, GeminiFormValues } from "./dialog";
+import { fetchGeminiRealtimeToken } from "./action";
 
-type DiscordNodeData = {
-  webhookUrl?: string;
-  content?: string;
-  username?: string;
+type GeminiNodeData = {
+  model?: string;
+  systemPrompt?: string;
+  userPrompt?: string;
+  variableName?: string;
 };
 
-type DiscordNodeType = Node<DiscordNodeData>;
+type GeminiNodeType = Node<GeminiNodeData>;
 
-export const DiscordNode = memo((props: NodeProps<DiscordNodeType>) => {
+export const GeminiNode = memo((props: NodeProps<GeminiNodeType>) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const { setNodes } = useReactFlow();
 
@@ -25,18 +26,21 @@ export const DiscordNode = memo((props: NodeProps<DiscordNodeType>) => {
   };
 
   const nodeData = props.data;
-  const description = nodeData.content
-    ? `${nodeData.content.slice(0, 50)}...`
+  const description = nodeData.userPrompt
+    ? `${nodeData.model || "gemini-2.5-flash"}: ${nodeData.userPrompt.slice(
+        0,
+        50
+      )}...`
     : "Not configured";
 
   const nodeStatus = useNodeStatus({
     nodeId: props.id,
-    channel: DISCORD_CHANNEL_NAME,
+    channel: GEMINI_CHANNEL_NAME,
     topic: "status",
-    refreshToken: fetchDiscordRealtimeToken,
+    refreshToken: fetchGeminiRealtimeToken,
   });
 
-  const handleSubmit = (values: DiscordFormValues) => {
+  const handleSubmit = (values: GeminiFormValues) => {
     setNodes((nodes) => {
       return nodes.map((node) => {
         if (node.id === props.id) {
@@ -50,7 +54,7 @@ export const DiscordNode = memo((props: NodeProps<DiscordNodeType>) => {
 
   return (
     <>
-      <DiscordDialog
+      <GeminiDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         onSubmit={handleSubmit}
@@ -58,9 +62,9 @@ export const DiscordNode = memo((props: NodeProps<DiscordNodeType>) => {
       />
       <BaseExecutionNode
         {...props}
-        icon="/logos/discord.svg"
+        icon="/logos/gemini.svg"
         id={props.id}
-        name="Discord"
+        name="Gemini"
         description={description}
         onDoubleClick={handleOpenSettings}
         onSettings={handleOpenSettings}
@@ -70,4 +74,4 @@ export const DiscordNode = memo((props: NodeProps<DiscordNodeType>) => {
   );
 });
 
-DiscordNode.displayName = "DiscordNode";
+GeminiNode.displayName = "GeminiNode";

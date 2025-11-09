@@ -1,4 +1,4 @@
-import { NodeExecutor } from "../../types";
+import { NodeExecutor } from "../../../executions/types";
 import { NonRetriableError } from "inngest";
 import ky, { type Options as KyOptions } from "ky";
 import Handlebars from "handlebars";

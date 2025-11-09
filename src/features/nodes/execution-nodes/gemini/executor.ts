@@ -1,6 +1,6 @@
 import { geminiChannel } from "@/inngest/channels/gemini";
 import Handlebars from "handlebars";
-import { NodeExecutor } from "../../types";
+import { NodeExecutor } from "../../../executions/types";
 import { NonRetriableError } from "inngest";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateText } from "ai";
