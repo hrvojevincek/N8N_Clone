@@ -34,6 +34,7 @@ export const executeWorkflow = inngest.createFunction(
         where: { id: execution.id },
         data: {
           status: ExecutionStatus.FAILED,
+          completedAt: new Date(),
           error: event.data.error.message,
           errorStack: event.data.error.stack,
         },
