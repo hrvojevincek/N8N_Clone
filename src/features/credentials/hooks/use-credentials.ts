@@ -80,9 +80,6 @@ export const useUpdateCredential = () => {
         queryClient.invalidateQueries(
           trpc.credentials.getOne.queryOptions({ id: data.id })
         );
-        queryClient.invalidateQueries(
-          trpc.credentials.getOne.queryOptions({ id: data.id })
-        );
       },
       onError: (error) => {
         toast.error(`Failed to save credential: ${error.message}`);
