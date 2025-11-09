@@ -58,6 +58,18 @@ const executionNodes: NodeTypeOption[] = [
     description: "Uses Google Gemini to generate a response.",
     icon: "/logos/gemini.svg",
   },
+  {
+    type: NodeType.DISCORD,
+    label: "Discord",
+    description: "Send a message to a Discord channel.",
+    icon: "/logos/discord.svg",
+  },
+  {
+    type: NodeType.SLACK,
+    label: "Slack",
+    description: "Send a message to a Slack channel.",
+    icon: "/logos/slack.svg",
+  },
 ];
 
 interface NodeSelectorProps {
