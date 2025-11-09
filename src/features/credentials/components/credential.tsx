@@ -89,7 +89,7 @@ export const CredentialForm = ({ initialData }: CredentialFormProps) => {
         },
         {
           onSuccess: () => {
-            router.push(`/credentials/`);
+            router.push(`/credentials`);
           },
           onError: (error) => {
             handleError(error);
