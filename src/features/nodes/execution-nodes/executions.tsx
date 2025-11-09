@@ -76,11 +76,11 @@ export const ExecutionsContainer = ({
 };
 
 export const ExecutionsLoading = () => {
-  return <LoadingView message="Loading credentials..." />;
+  return <LoadingView message="Loading executions..." />;
 };
 
 export const ExecutionsError = () => {
-  return <ErrorView message="Error loading credentials..." />;
+  return <ErrorView message="Error loading executions..." />;
 };
 
 const ExecutionsEmpty = () => {
@@ -112,16 +112,18 @@ export const ExecutionItem = ({
   data: Execution & { workflow: { name: string; id: string } };
 }) => {
   const duration = data.completedAt
-    ? new Date(data.completedAt).getTime() - new Date(data.startedAt).getTime()
+    ? Math.round(
+        (new Date(data.completedAt).getTime() -
+          new Date(data.startedAt).getTime()) /
+          1000
+      )
     : null;
 
   const subtitle = (
     <>
       {data.workflow.name} &bull; Started{" "}
       {formatDistanceToNow(data.startedAt, { addSuffix: true })}
-      {formatDistanceToNow(data.startedAt, { addSuffix: true })}
-      {duration !== null && <> &bull; Duration {duration}ms</>}
-     </>
+      {duration !== null && <> &bull; Duration {duration}s</>}
     </>
   );
 

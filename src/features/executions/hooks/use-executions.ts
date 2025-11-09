@@ -1,5 +1,5 @@
 /**
- * Hook to fetch all credentials using suspense
+ * Hook to fetch all executions using suspense
  */
 
 import { useTRPC } from "@/trpc/client";
