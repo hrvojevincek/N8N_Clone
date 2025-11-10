@@ -62,7 +62,7 @@ export const BaseExecutionNode = memo(
               {typeof Icon === "string" ? (
                 <Image src={Icon} alt={name} width={16} height={16} />
               ) : (
-                <Icon className="size 4 text-muted-foreground" />
+                <Icon className="size-4 text-muted-foreground" />
               )}
               {children}
               <BaseHandle
