@@ -3,15 +3,6 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
-  async redirects() {
-    return [
-      {
-        source: "/",
-        destination: "/n8n",
-        permanent: false,
-      },
-    ];
-  },
   reactCompiler: true,
 };
 
