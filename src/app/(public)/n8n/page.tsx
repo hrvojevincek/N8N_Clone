@@ -8,9 +8,9 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
+import { RegisterForm } from "@/features/auth/components/register-form";
 import { SaveIcon } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
 
 const Page = () => {
   return (
@@ -46,9 +46,9 @@ const Page = () => {
           fill
         />
         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-          <p className="text-white text-2xl font-semibold">
-            Please login to start
-          </p>
+          <div className="w-full max-w-sm">
+            <RegisterForm />
+          </div>
         </div>
       </div>
     </div>
