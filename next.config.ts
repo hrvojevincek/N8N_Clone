@@ -6,6 +6,9 @@ const nextConfig: NextConfig = {
 
   reactCompiler: true,
   serverExternalPackages: ["@prisma/client"],
+  outputFileTracingIncludes: {
+    "/api/**/*": ["./src/generated/prisma/**/*"],
+  },
 
   webpack: (config, { isServer }) => {
     if (isServer) {
