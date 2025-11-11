@@ -5,6 +5,14 @@ const nextConfig: NextConfig = {
   /* config options here */
 
   reactCompiler: true,
+  serverExternalPackages: ["@prisma/client"],
+
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.externals = [...(config.externals || []), "@prisma/client"];
+    }
+    return config;
+  },
 };
 
 export default withSentryConfig(nextConfig, {
