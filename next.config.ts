@@ -12,7 +12,8 @@ const nextConfig: NextConfig = {
 
   // Crucial: Tell Next.js to include Prisma binaries in tracing
   outputFileTracingIncludes: {
-    "/api/**/*": ["./src/generated/prisma/**/*"], // Adjust path if needed
+    "/app/api/**": ["./src/generated/prisma/**/*"],
+    "/app/**/*": ["./src/generated/prisma/**/*"],
   },
 
   webpack: (config, { isServer }) => {
