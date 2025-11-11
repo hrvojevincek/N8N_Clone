@@ -72,7 +72,7 @@ export function LoginForm() {
           router.push("/workflows");
         },
         onError: () => {
-          toast.error("Failed to sign in with Github");
+          toast.error("Failed to sign in with Google");
         },
       }
     );
