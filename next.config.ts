@@ -5,17 +5,17 @@ const nextConfig: NextConfig = {
   /* config options here */
 
   reactCompiler: true,
-  serverExternalPackages: ["@prisma/client"],
-  outputFileTracingIncludes: {
-    "/api/**/*": ["./src/generated/prisma/**/*"],
-  },
+  // serverExternalPackages: ["@prisma/client"],
+  // outputFileTracingIncludes: {
+  //   "/api/**/*": ["./src/generated/prisma/**/*"],
+  // },
 
-  webpack: (config, { isServer }) => {
-    if (isServer) {
-      config.externals = [...(config.externals || []), "@prisma/client"];
-    }
-    return config;
-  },
+  // webpack: (config, { isServer }) => {
+  //   if (isServer) {
+  //     config.externals = [...(config.externals || []), "@prisma/client"];
+  //   }
+  //   return config;
+  // },
 };
 
 export default withSentryConfig(nextConfig, {
