@@ -14,6 +14,10 @@ const notoSans = Noto_Sans({
 export const metadata: Metadata = {
   title: "N8N - Workflow Automation Clone",
   description: "N8N - Workflow Automation Clone",
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({
