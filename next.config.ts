@@ -1,3 +1,4 @@
+import { PrismaPlugin } from "@prisma/nextjs-monorepo-workaround-plugin";
 import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 
@@ -10,12 +11,12 @@ const nextConfig: NextConfig = {
   //   "/api/**/*": ["./src/generated/prisma/**/*"],
   // },
 
-  // webpack: (config, { isServer }) => {
-  //   if (isServer) {
-  //     config.externals = [...(config.externals || []), "@prisma/client"];
-  //   }
-  //   return config;
-  // },
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.plugins = [...config.plugins, new PrismaPlugin()];
+    }
+    return config;
+  },
 };
 
 export default withSentryConfig(nextConfig, {
