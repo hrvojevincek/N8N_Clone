@@ -22,7 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import z from "zod";
 
 const formSchema = z.object({
@@ -71,7 +71,8 @@ export const SlackDialog = ({
     }
   }, [open, defaultValues, form]);
 
-  const watchVariableName = form.watch("variableName") || "mySlack";
+  const watchVariableName =
+    useWatch({ control: form.control, name: "variableName" }) || "mySlack";
 
   const handleSubmit = (values: SlackFormValues) => {
     onSubmit(values);

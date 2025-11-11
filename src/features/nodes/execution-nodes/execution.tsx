@@ -10,6 +10,13 @@ import {
 import { ExecutionStatus } from "@/generated/prisma/enums";
 import Link from "next/link";
 
+import { Button } from "@/components/ui/button";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { formatDistanceToNow } from "date-fns";
 import {
   CheckCircle2Icon,
   ClockIcon,
@@ -18,13 +25,6 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useSuspenseExecution } from "../../executions/hooks/use-executions";
-import { formatDistanceToNow, formatDuration } from "date-fns";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { Button } from "@/components/ui/button";
 
 const getStatusIcon = (status: ExecutionStatus) => {
   switch (status) {

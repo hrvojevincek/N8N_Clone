@@ -32,7 +32,7 @@ import { useGetCredentialsByType } from "@/features/credentials/hooks/use-creden
 import { CredentialType } from "@/generated/prisma/enums";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import z from "zod";
 
 const AVAILABLE_MODELS = [
@@ -96,7 +96,9 @@ export const GeminiDialog = ({
       });
     }
   }, [open, defaultValues, form]);
-  const watchVariableName = form.watch("variableName") || "AI Prompt title";
+  const watchVariableName =
+    useWatch({ control: form.control, name: "variableName" }) ||
+    "AI Prompt title";
 
   const handleSubmit = (values: z.infer<typeof formSchema>) => {
     onSubmit(values);

@@ -1,6 +1,5 @@
 import { PAGINATION } from "@/config/constants";
 import { NodeType } from "@/generated/prisma/client";
-import { inngest } from "@/inngest/client";
 import { sendWorkflowExecution } from "@/inngest/utils";
 import prisma from "@/lib/database";
 import {

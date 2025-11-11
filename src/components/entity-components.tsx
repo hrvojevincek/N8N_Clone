@@ -11,10 +11,11 @@ import {
   TrashIcon,
   TriangleAlertIcon,
 } from "lucide-react";
-import { Button } from "./ui/button";
 import Link from "next/link";
+import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 
+import { cn } from "@/lib/utils";
 import {
   Empty,
   EmptyContent,
@@ -23,16 +24,8 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "./ui/empty";
-import { cn } from "@/lib/utils";
 
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter,
-} from "./ui/card";
+import { Card, CardContent, CardDescription, CardTitle } from "./ui/card";
 
 import {
   DropdownMenu,

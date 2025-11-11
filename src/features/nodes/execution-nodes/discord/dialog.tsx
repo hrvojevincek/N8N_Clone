@@ -22,7 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import z from "zod";
 
 const formSchema = z.object({
@@ -74,7 +74,8 @@ export const DiscordDialog = ({
     }
   }, [open, defaultValues, form]);
 
-  const watchVariableName = form.watch("variableName") || "myDiscord";
+  const watchVariableName =
+    useWatch({ control: form.control, name: "variableName" }) || "myDiscord";
 
   const handleSubmit = (values: DiscordFormValues) => {
     onSubmit(values);

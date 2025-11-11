@@ -1,10 +1,9 @@
-import { discordChannel } from "@/inngest/channels/discord";
+import { slackChannel } from "@/inngest/channels/slack";
 import Handlebars from "handlebars";
 import { decode } from "html-entities";
 import { NonRetriableError } from "inngest";
 import ky from "ky";
 import { NodeExecutor } from "../../../executions/types";
-import { slackChannel } from "@/inngest/channels/slack";
 
 Handlebars.registerHelper("json", (context) => {
   const jsonString = JSON.stringify(context, null, 2);

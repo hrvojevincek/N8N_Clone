@@ -29,7 +29,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import z from "zod";
 
 const formSchema = z.object({
@@ -80,8 +80,9 @@ export const HttpRequestDialog = ({
       });
     }
   }, [open, defaultValues, form]);
-  const watchVariableName = form.watch("variableName") || "myApiCall";
-  const watchMethod = form.watch("method");
+  const watchVariableName =
+    useWatch({ control: form.control, name: "variableName" }) || "myApiCall";
+  const watchMethod = useWatch({ control: form.control, name: "method" });
   const showBodyField = ["POST", "PUT", "PATCH"].includes(watchMethod);
 
   const handleSubmit = (values: z.infer<typeof formSchema>) => {
