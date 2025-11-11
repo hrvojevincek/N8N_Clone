@@ -44,6 +44,40 @@ export function LoginForm() {
     },
   });
 
+  const signInWithGithub = async () => {
+    await authClient.signIn.social(
+      {
+        provider: "github",
+        callbackURL: "/workflows",
+      },
+      {
+        onSuccess: () => {
+          router.push("/workflows");
+        },
+        onError: () => {
+          toast.error("Failed to sign in with Github");
+        },
+      }
+    );
+  };
+
+  const signInWithGoogle = async () => {
+    await authClient.signIn.social(
+      {
+        provider: "google",
+        callbackURL: "/workflows",
+      },
+      {
+        onSuccess: () => {
+          router.push("/workflows");
+        },
+        onError: () => {
+          toast.error("Failed to sign in with Github");
+        },
+      }
+    );
+  };
+
   const onSubmit = async (values: LoginFormValues) => {
     await authClient.signIn.email(
       {
@@ -81,6 +115,7 @@ export function LoginForm() {
                     className="w-full"
                     type="button"
                     disabled={isPending}
+                    onClick={signInWithGithub}
                   >
                     <Image
                       src="/logos/github.svg"
@@ -95,6 +130,7 @@ export function LoginForm() {
                     className="w-full"
                     type="button"
                     disabled={isPending}
+                    onClick={signInWithGoogle}
                   >
                     <Image
                       src="/logos/google.svg"
