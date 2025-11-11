@@ -3,7 +3,7 @@ import {
   CredentialsError,
   CredentialsLoading,
 } from "@/features/credentials/components/credentials";
-import { prefetchCredential } from "@/features/executions/server/prefetch";
+import { prefetchCredential } from "@/features/credentials/server/prefetch";
 import { requireAuth } from "@/lib/auth-utils";
 import { HydrateClient } from "@/trpc/server";
 import { Suspense } from "react";
