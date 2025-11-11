@@ -6,10 +6,14 @@ const nextConfig: NextConfig = {
   /* config options here */
 
   reactCompiler: true,
-  // serverExternalPackages: ["@prisma/client"],
-  // outputFileTracingIncludes: {
-  //   "/api/**/*": ["./src/generated/prisma/**/*"],
-  // },
+  serverExternalPackages: ["@prisma/client"],
+
+  output: "standalone",
+
+  // Crucial: Tell Next.js to include Prisma binaries in tracing
+  outputFileTracingIncludes: {
+    "/api/**/*": ["./src/generated/prisma/**/*"], // Adjust path if needed
+  },
 
   webpack: (config, { isServer }) => {
     if (isServer) {
