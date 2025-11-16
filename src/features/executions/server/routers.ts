@@ -4,7 +4,7 @@ import { PAGINATION } from "@/config/constants";
 import { db } from "@/db/client";
 import { executions, workflows } from "@/db/schema";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
-import { and, desc, eq, sql } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 
 export const executionsRouter = createTRPCRouter({
@@ -14,10 +14,11 @@ export const executionsRouter = createTRPCRouter({
         id: z.string(),
       })
     )
-    .query(async ({ ctx, input }) => {
+    .query(async ({ input }) => {
       const [execution] = await db
         .select({
           id: executions.id,
+          workflowId: executions.workflowId,
           status: executions.status,
           error: executions.error,
           errorStack: executions.errorStack,
@@ -31,13 +32,7 @@ export const executionsRouter = createTRPCRouter({
           },
         })
         .from(executions)
-        .innerJoin(
-          workflows,
-          and(
-            eq(executions.workflowId, workflows.id),
-            eq(workflows.userId, ctx.auth.user.id)
-          )
-        )
+        .innerJoin(workflows, eq(executions.workflowId, workflows.id))
         .where(eq(executions.id, input.id))
         .limit(1);
 
@@ -67,6 +62,7 @@ export const executionsRouter = createTRPCRouter({
       const items = await db
         .select({
           id: executions.id,
+          workflowId: executions.workflowId,
           status: executions.status,
           error: executions.error,
           errorStack: executions.errorStack,

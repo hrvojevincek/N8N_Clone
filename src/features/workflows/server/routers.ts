@@ -43,29 +43,31 @@ export const workflowsRouter = createTRPCRouter({
     }),
 
   create: premiumProcedure.mutation(async ({ ctx }) => {
-    const [workflow] = await db
-      .insert(workflows)
-      .values({
+    return await db.transaction(async (tx) => {
+      const [workflow] = await tx
+        .insert(workflows)
+        .values({
+          id: createId(),
+          name: generateSlug(3),
+          userId: ctx.auth.user.id,
+        })
+        .returning();
+
+      if (!workflow) {
+        throw new Error("Failed to create workflow");
+      }
+
+      await tx.insert(workflowNodes).values({
         id: createId(),
-        name: generateSlug(3),
-        userId: ctx.auth.user.id,
-      })
-      .returning();
+        workflowId: workflow.id,
+        name: "Initial",
+        type: NodeType.INITIAL,
+        position: { x: 0, y: 0 },
+        data: {},
+      });
 
-    if (!workflow) {
-      throw new Error("Failed to create workflow");
-    }
-
-    await db.insert(workflowNodes).values({
-      id: createId(),
-      workflowId: workflow.id,
-      name: "Initial",
-      type: NodeType.INITIAL,
-      position: { x: 0, y: 0 },
-      data: {},
+      return workflow;
     });
-
-    return workflow;
   }),
 
   update: protectedProcedure

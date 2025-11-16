@@ -1,4 +1,12 @@
-import { pgTable, text, boolean, timestamp, jsonb } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  text,
+  boolean,
+  timestamp,
+  jsonb,
+  index,
+  unique,
+} from "drizzle-orm/pg-core";
 
 // Auth-related tables
 
@@ -48,57 +56,106 @@ export const verifications = pgTable("verification", {
   updatedAt: timestamp("updatedAt", { mode: "date" }).defaultNow().notNull(),
 });
 
-export const credentials = pgTable("credential", {
-  id: text("id").primaryKey(),
-  name: text("name").notNull(),
-  value: text("value").notNull(),
-  type: text("type").notNull(),
-  createdAt: timestamp("createdAt", { mode: "date" }).defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt", { mode: "date" }).defaultNow().notNull(),
-  userId: text("userId").notNull(),
-});
+export const credentials = pgTable(
+  "credential",
+  {
+    id: text("id").primaryKey(),
+    name: text("name").notNull(),
+    value: text("value").notNull(),
+    type: text("type").notNull(),
+    createdAt: timestamp("createdAt", { mode: "date" }).defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt", { mode: "date" }).defaultNow().notNull(),
+    userId: text("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+  },
+  (table) => [
+    index("credential_user_id_idx").on(table.userId),
+    index("credential_type_idx").on(table.type),
+  ]
+);
 
-// Workflows & executions
+export const workflows = pgTable(
+  "workflow",
+  {
+    id: text("id").primaryKey(),
+    name: text("name").notNull(),
+    createdAt: timestamp("createdAt", { mode: "date" }).defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt", { mode: "date" }).defaultNow().notNull(),
+    userId: text("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+  },
+  (table) => [index("workflow_user_id_idx").on(table.userId)]
+);
 
-export const workflows = pgTable("workflow", {
-  id: text("id").primaryKey(),
-  name: text("name").notNull(),
-  createdAt: timestamp("createdAt", { mode: "date" }).defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt", { mode: "date" }).defaultNow().notNull(),
-  userId: text("userId").notNull(),
-});
+export const nodes = pgTable(
+  "node",
+  {
+    id: text("id").primaryKey(),
+    workflowId: text("workflowId")
+      .notNull()
+      .references(() => workflows.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    type: text("type").notNull(),
+    position: jsonb("position").notNull(),
+    data: jsonb("data").default({}).notNull(),
+    createdAt: timestamp("createdAt", { mode: "date" }).defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt", { mode: "date" }).defaultNow().notNull(),
+    credentialId: text("credentialId").references(() => credentials.id, {
+      onDelete: "set null",
+    }),
+  },
+  (table) => [
+    index("node_workflow_id_idx").on(table.workflowId),
+    index("node_credential_id_idx").on(table.credentialId),
+  ]
+);
 
-export const nodes = pgTable("node", {
-  id: text("id").primaryKey(),
-  workflowId: text("workflowId").notNull(),
-  name: text("name").notNull(),
-  type: text("type").notNull(),
-  position: jsonb("position").notNull(),
-  data: jsonb("data").default({}).notNull(),
-  createdAt: timestamp("createdAt", { mode: "date" }).defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt", { mode: "date" }).defaultNow().notNull(),
-  credentialId: text("credentialId"),
-});
+export const connections = pgTable(
+  "connection",
+  {
+    id: text("id").primaryKey(),
+    workflowId: text("workflowId")
+      .notNull()
+      .references(() => workflows.id, { onDelete: "cascade" }),
+    fromNodeId: text("fromNodeId")
+      .notNull()
+      .references(() => nodes.id, { onDelete: "cascade" }),
+    toNodeId: text("toNodeId")
+      .notNull()
+      .references(() => nodes.id, { onDelete: "cascade" }),
+    fromOutput: text("fromOutput").default("main").notNull(),
+    toInput: text("toInput").default("main").notNull(),
+    createdAt: timestamp("createdAt", { mode: "date" }).defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt", { mode: "date" }).defaultNow().notNull(),
+  },
+  (table) => [
+    index("connection_workflow_id_idx").on(table.workflowId),
+    index("connection_from_node_id_idx").on(table.fromNodeId),
+    index("connection_to_node_id_idx").on(table.toNodeId),
+  ]
+);
 
-export const connections = pgTable("connection", {
-  id: text("id").primaryKey(),
-  workflowId: text("workflowId").notNull(),
-  fromNodeId: text("fromNodeId").notNull(),
-  toNodeId: text("toNodeId").notNull(),
-  fromOutput: text("fromOutput").default("main").notNull(),
-  toInput: text("toInput").default("main").notNull(),
-  createdAt: timestamp("createdAt", { mode: "date" }).defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt", { mode: "date" }).defaultNow().notNull(),
-});
-
-export const executions = pgTable("execution", {
-  id: text("id").primaryKey(),
-  workflowId: text("workflowId").notNull(),
-  status: text("status").notNull(),
-  error: text("error"),
-  errorStack: text("errorStack"),
-  startedAt: timestamp("startedAt", { mode: "date" }).defaultNow().notNull(),
-  completedAt: timestamp("completedAt", { mode: "date" }),
-  inngestEventId: text("inngestEventId").notNull(),
-  output: jsonb("output"),
-});
+export const executions = pgTable(
+  "execution",
+  {
+    id: text("id").primaryKey(),
+    workflowId: text("workflowId")
+      .notNull()
+      .references(() => workflows.id, { onDelete: "cascade" }),
+    status: text("status").notNull(),
+    error: text("error"),
+    errorStack: text("errorStack"),
+    startedAt: timestamp("startedAt", { mode: "date" }).defaultNow().notNull(),
+    completedAt: timestamp("completedAt", { mode: "date" }),
+    inngestEventId: text("inngestEventId").notNull(),
+    output: jsonb("output"),
+  },
+  (table) => [
+    index("execution_workflow_id_idx").on(table.workflowId),
+    index("execution_status_idx").on(table.status),
+    index("execution_inngest_event_id_idx").on(table.inngestEventId),
+    unique("execution_inngest_event_id_unique").on(table.inngestEventId),
+  ]
+);

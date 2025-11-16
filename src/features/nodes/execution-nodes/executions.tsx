@@ -10,7 +10,6 @@ import {
   ErrorView,
   LoadingView,
 } from "@/components/entity-components";
-import { executions } from "@/db/schema";
 import { ExecutionStatus } from "@/db/enums";
 import { formatDistanceToNow } from "date-fns";
 import {
@@ -21,13 +20,16 @@ import {
 } from "lucide-react";
 import { useSuspenseExecutions } from "../../executions/hooks/use-executions";
 import { useExecutionsParams } from "../../executions/hooks/use-executions-params";
+import { inferRouterOutputs } from "@trpc/server";
+import { AppRouter } from "@/trpc/routers/_app";
+
+type ExecutionsOutput = inferRouterOutputs<AppRouter>["executions"]["getMany"];
+type ExecutionListItem = ExecutionsOutput["items"][number];
 
 export const ExecutionsList = () => {
   const executions = useSuspenseExecutions();
 
-  type ExecutionListItem = React.ComponentProps<typeof ExecutionItem>["data"];
-
-  const items = executions.data.items as ExecutionListItem[];
+  const items: ExecutionListItem[] = executions.data.items;
 
   return (
     <EntityList
@@ -110,13 +112,7 @@ const formatStatus = (status: string) => {
   return status.charAt(0) + status.slice(1).toLowerCase();
 };
 
-export const ExecutionItem = ({
-  data,
-}: {
-  data: typeof executions.$inferSelect & {
-    workflow: { name: string; id: string };
-  };
-}) => {
+export const ExecutionItem = ({ data }: { data: ExecutionListItem }) => {
   const duration = data.completedAt
     ? Math.round(
         (new Date(data.completedAt).getTime() -
