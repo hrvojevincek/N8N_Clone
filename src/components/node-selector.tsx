@@ -13,7 +13,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { NodeType } from "@/generated/prisma/enums";
+import { NodeType } from "@/db/enums";
 import { Separator } from "./ui/separator";
 
 export type NodeTypeOption = {

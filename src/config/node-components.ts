@@ -6,7 +6,7 @@ import { SlackNode } from "@/features/nodes/execution-nodes/slack/node";
 import { GoogleFormTrigger } from "@/features/nodes/trigger-nodes/google-form-trigger/node";
 import { ManualTriggerNode } from "@/features/nodes/trigger-nodes/manual-trigger/node";
 import { StripeTriggerNode } from "@/features/nodes/trigger-nodes/stripe-trigger/node";
-import { NodeType } from "@/generated/prisma/enums";
+import { NodeType } from "@/db/enums";
 import type { NodeTypes } from "@xyflow/react";
 
 export const nodeComponents = {

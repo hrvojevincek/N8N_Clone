@@ -20,7 +20,7 @@ import {
 import { useCallback, useMemo, useState } from "react";
 
 import { nodeComponents } from "@/config/node-components";
-import { NodeType } from "@/generated/prisma/enums";
+import { NodeType } from "@/db/enums";
 import "@xyflow/react/dist/style.css";
 import { useSetAtom } from "jotai";
 import { editorAtom } from "../store/atoms";

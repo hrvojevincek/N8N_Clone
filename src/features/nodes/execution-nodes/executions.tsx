@@ -10,8 +10,8 @@ import {
   ErrorView,
   LoadingView,
 } from "@/components/entity-components";
-import { Execution } from "@/generated/prisma/client";
-import { ExecutionStatus } from "@/generated/prisma/enums";
+import { executions } from "@/db/schema";
+import { ExecutionStatus } from "@/db/enums";
 import { formatDistanceToNow } from "date-fns";
 import {
   CheckCircle2Icon,
@@ -25,9 +25,13 @@ import { useExecutionsParams } from "../../executions/hooks/use-executions-param
 export const ExecutionsList = () => {
   const executions = useSuspenseExecutions();
 
+  type ExecutionListItem = React.ComponentProps<typeof ExecutionItem>["data"];
+
+  const items = executions.data.items as ExecutionListItem[];
+
   return (
     <EntityList
-      items={executions.data.items}
+      items={items}
       getKey={(execution) => execution.id}
       renderItem={(execution) => (
         <ExecutionItem key={execution.id} data={execution} />
@@ -89,7 +93,7 @@ const ExecutionsEmpty = () => {
   );
 };
 
-const getStatusIcon = (status: ExecutionStatus) => {
+const getStatusIcon = (status: string) => {
   switch (status) {
     case ExecutionStatus.RUNNING:
       return <Loader2Icon className="size-5 animate-spin text-blue-600" />;
@@ -102,14 +106,16 @@ const getStatusIcon = (status: ExecutionStatus) => {
   }
 };
 
-const formatStatus = (status: ExecutionStatus) => {
+const formatStatus = (status: string) => {
   return status.charAt(0) + status.slice(1).toLowerCase();
 };
 
 export const ExecutionItem = ({
   data,
 }: {
-  data: Execution & { workflow: { name: string; id: string } };
+  data: typeof executions.$inferSelect & {
+    workflow: { name: string; id: string };
+  };
 }) => {
   const duration = data.completedAt
     ? Math.round(

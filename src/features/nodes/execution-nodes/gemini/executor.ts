@@ -4,8 +4,10 @@ import { NodeExecutor } from "../../../executions/types";
 import { NonRetriableError } from "inngest";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateText } from "ai";
-import prisma from "@/lib/database";
+import { db } from "@/db/client";
+import { credentials } from "@/db/schema";
 import { decrypt } from "@/lib/encrypt";
+import { and, eq } from "drizzle-orm";
 
 Handlebars.registerHelper("json", (context) => {
   const jsonString = JSON.stringify(context, null, 2);
@@ -35,8 +37,6 @@ export const geminiExecutor: NodeExecutor<GeminiData> = async ({
       status: "loading",
     })
   );
-
-  console.log("data", data);
 
   if (!data.variableName) {
     await publish(
@@ -75,12 +75,18 @@ export const geminiExecutor: NodeExecutor<GeminiData> = async ({
   const userPrompt = Handlebars.compile(data.userPrompt)(context);
 
   const credential = await step.run("get-credential", async () => {
-    return await prisma.credential.findUniqueOrThrow({
-      where: {
-        id: data.credentialId,
-        userId,
-      },
-    });
+    const [row] = await db
+      .select()
+      .from(credentials)
+      .where(
+        and(
+          eq(credentials.id, data.credentialId!),
+          eq(credentials.userId, userId)
+        )
+      )
+      .limit(1);
+
+    return row;
   });
 
   if (!credential) {

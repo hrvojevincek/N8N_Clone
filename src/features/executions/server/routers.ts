@@ -1,6 +1,10 @@
+// src/features/executions/server/routers.ts
+
 import { PAGINATION } from "@/config/constants";
-import prisma from "@/lib/database";
+import { db } from "@/db/client";
+import { executions, workflows } from "@/db/schema";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 
 export const executionsRouter = createTRPCRouter({
@@ -10,24 +14,40 @@ export const executionsRouter = createTRPCRouter({
         id: z.string(),
       })
     )
-    .query(({ ctx, input }) => {
-      return prisma.execution.findUniqueOrThrow({
-        where: {
-          id: input.id,
+    .query(async ({ ctx, input }) => {
+      const [execution] = await db
+        .select({
+          id: executions.id,
+          status: executions.status,
+          error: executions.error,
+          errorStack: executions.errorStack,
+          startedAt: executions.startedAt,
+          completedAt: executions.completedAt,
+          inngestEventId: executions.inngestEventId,
+          output: executions.output,
           workflow: {
-            userId: ctx.auth.user.id,
+            id: workflows.id,
+            name: workflows.name,
           },
-        },
-        include: {
-          workflow: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-        },
-      });
+        })
+        .from(executions)
+        .innerJoin(
+          workflows,
+          and(
+            eq(executions.workflowId, workflows.id),
+            eq(workflows.userId, ctx.auth.user.id)
+          )
+        )
+        .where(eq(executions.id, input.id))
+        .limit(1);
+
+      if (!execution) {
+        throw new Error("Execution not found");
+      }
+
+      return execution;
     }),
+
   getMany: protectedProcedure
     .input(
       z.object({
@@ -42,36 +62,37 @@ export const executionsRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const { page, pageSize } = input;
 
-      const [items, totalCount] = await Promise.all([
-        prisma.execution.findMany({
-          skip: (page - 1) * pageSize,
-          take: pageSize,
-          where: {
-            workflow: {
-              userId: ctx.auth.user.id,
-            },
-          },
-          orderBy: {
-            startedAt: "desc",
-          },
-          include: {
-            workflow: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-          },
-        }),
-        prisma.execution.count({
-          where: {
-            workflow: {
-              userId: ctx.auth.user.id,
-            },
-          },
-        }),
-      ]);
+      const where = eq(workflows.userId, ctx.auth.user.id);
 
+      const items = await db
+        .select({
+          id: executions.id,
+          status: executions.status,
+          error: executions.error,
+          errorStack: executions.errorStack,
+          startedAt: executions.startedAt,
+          completedAt: executions.completedAt,
+          inngestEventId: executions.inngestEventId,
+          output: executions.output,
+          workflow: {
+            id: workflows.id,
+            name: workflows.name,
+          },
+        })
+        .from(executions)
+        .innerJoin(workflows, eq(executions.workflowId, workflows.id))
+        .where(where)
+        .orderBy(desc(executions.startedAt))
+        .limit(pageSize)
+        .offset((page - 1) * pageSize);
+
+      const [{ count }] = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(executions)
+        .innerJoin(workflows, eq(executions.workflowId, workflows.id))
+        .where(where);
+
+      const totalCount = Number(count);
       const totalPages = Math.ceil(totalCount / pageSize);
       const hasNextPage = page < totalPages;
       const hasPreviousPage = page > 1;

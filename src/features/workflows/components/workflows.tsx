@@ -20,7 +20,7 @@ import { useUpgradeModal } from "@/hooks/use-upgrade-modal";
 import { useRouter } from "next/navigation";
 import { useWorkflowsParams } from "../hooks/use-workflows-params";
 import { useEntitySearch } from "@/hooks/use-entity-search";
-import type { Workflow } from "@/generated/prisma/client";
+import type { workflows } from "@/db/schema";
 import { WorkflowIcon } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
@@ -151,7 +151,11 @@ const WorkflowsEmpty = () => {
   );
 };
 
-export const WorkflowItem = ({ data }: { data: Workflow }) => {
+export const WorkflowItem = ({
+  data,
+}: {
+  data: typeof workflows.$inferSelect;
+}) => {
   const { mutateAsync: removeWorkflow, isPending } = useRemoveWorkflow();
 
   const handleRemove = async () => {

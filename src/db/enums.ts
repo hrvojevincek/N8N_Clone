@@ -1,0 +1,20 @@
+export enum CredentialType {
+  GEMINI = "GEMINI",
+}
+
+export enum NodeType {
+  INITIAL = "INITIAL",
+  MANUAL_TRIGGER = "MANUAL_TRIGGER",
+  HTTP_REQUEST = "HTTP_REQUEST",
+  GOOGLE_FORM_TRIGGER = "GOOGLE_FORM_TRIGGER",
+  STRIPE_TRIGGER = "STRIPE_TRIGGER",
+  GEMINI = "GEMINI",
+  DISCORD = "DISCORD",
+  SLACK = "SLACK",
+}
+
+export enum ExecutionStatus {
+  RUNNING = "RUNNING",
+  SUCCESS = "SUCCESS",
+  FAILED = "FAILED",
+}

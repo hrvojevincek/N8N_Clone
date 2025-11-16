@@ -29,7 +29,7 @@ import {
 import Image from "next/image";
 import { Textarea } from "@/components/ui/textarea";
 import { useGetCredentialsByType } from "@/features/credentials/hooks/use-credentials";
-import { CredentialType } from "@/generated/prisma/enums";
+import { CredentialType } from "@/db/enums";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 import { useForm, useWatch } from "react-hook-form";

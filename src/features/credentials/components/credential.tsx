@@ -24,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CredentialType } from "@/generated/prisma/enums";
+import { CredentialType } from "@/db/enums";
 import { useUpgradeModal } from "@/hooks/use-upgrade-modal";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Image from "next/image";
@@ -216,5 +216,5 @@ export const CredentialForm = ({ initialData }: CredentialFormProps) => {
 export const CredentialView = ({ credentialId }: { credentialId: string }) => {
   const { data: credential } = useSuspenseCredential(credentialId);
 
-  return <CredentialForm initialData={credential} />;
+  return <CredentialForm initialData={credential as CredentialFormValues} />;
 };

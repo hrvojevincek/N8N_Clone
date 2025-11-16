@@ -1,7 +1,10 @@
 import toposort from "toposort";
-import { Node, Connection } from "@/generated/prisma/client";
+import { nodes, connections } from "@/db/schema";
 import { inngest } from "./client";
 import { createId } from "@paralleldrive/cuid2";
+
+type Node = typeof nodes.$inferSelect;
+type Connection = typeof connections.$inferSelect;
 
 export const topologicalSort = (
   nodes: Node[],

@@ -20,8 +20,8 @@ import {
   useSuspenseCredentials,
 } from "../hooks/use-credentials";
 import { useCredentialsParams } from "../hooks/use-credentials-params";
-import { Credential } from "@/generated/prisma/client";
-import { CredentialType } from "@/generated/prisma/enums";
+import { credentials } from "@/db/schema";
+import { CredentialType } from "@/db/enums";
 
 export const CredentialsSearch = () => {
   const [params, setParams] = useCredentialsParams();
@@ -119,6 +119,8 @@ const CredentialsEmpty = () => {
   );
 };
 
+type Credential = typeof credentials.$inferSelect;
+
 type CredentialListItem = Pick<
   Credential,
   "id" | "name" | "type" | "createdAt" | "updatedAt"
@@ -135,7 +137,7 @@ export const CredentialItem = ({ data }: { data: CredentialListItem }) => {
     await removeCredential({ id: data.id });
   };
 
-  const logo = credentialLogos[data.type];
+  const logo = credentialLogos[data.type as CredentialType];
 
   return (
     <EntityItem

@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ExecutionStatus } from "@/generated/prisma/enums";
+import { ExecutionStatus } from "@/db/enums";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
@@ -26,7 +26,7 @@ import {
 import { useState } from "react";
 import { useSuspenseExecution } from "../../executions/hooks/use-executions";
 
-const getStatusIcon = (status: ExecutionStatus) => {
+const getStatusIcon = (status: string) => {
   switch (status) {
     case ExecutionStatus.RUNNING:
       return <Loader2Icon className="size-5 animate-spin text-blue-600" />;
@@ -39,7 +39,7 @@ const getStatusIcon = (status: ExecutionStatus) => {
   }
 };
 
-const formatStatus = (status: ExecutionStatus) => {
+const formatStatus = (status: string) => {
   return status.charAt(0) + status.slice(1).toLowerCase();
 };
 
@@ -145,14 +145,14 @@ export const ExecutionView = ({ executionId }: { executionId: string }) => {
           </div>
         )}
 
-        {execution.output && (
+        {execution.output ? (
           <div className="mt-6 p-4 bg-muted rounded-md">
             <p className="text-sm font-medium mb-2">Output</p>
             <pre className="text-xs font-mono overflow-auto">
               {JSON.stringify(execution.output, null, 2)}
             </pre>
           </div>
-        )}
+        ) : null}
       </CardContent>
     </Card>
   );
