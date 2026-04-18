@@ -8,8 +8,11 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogCancel,
-  AlertDialogAction,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { useTRPC } from "@/trpc/client";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 interface UpgradeModalProps {
   open: boolean;
@@ -17,6 +20,20 @@ interface UpgradeModalProps {
 }
 
 export const UpgradeModal = ({ open, onOpenChange }: UpgradeModalProps) => {
+  const trpc = useTRPC();
+  const createCheckout = useMutation(
+    trpc.subscriptions.createCheckout.mutationOptions({
+      onSuccess: (data) => {
+        if (data.url) {
+          window.location.href = data.url;
+        }
+      },
+      onError: (error) => {
+        toast.error("Failed to create checkout: " + error.message);
+      },
+    })
+  );
+
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
@@ -29,9 +46,12 @@ export const UpgradeModal = ({ open, onOpenChange }: UpgradeModalProps) => {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction disabled>
-            Upgrade Now
-          </AlertDialogAction>
+          <Button
+            onClick={() => createCheckout.mutate()}
+            disabled={createCheckout.isPending}
+          >
+            {createCheckout.isPending ? "Redirecting..." : "Upgrade Now"}
+          </Button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

@@ -1,19 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { authClient } from "@/lib/auth-client";
+import { useTRPC } from "@/trpc/client";
 
 export const useSubscriptions = () => {
-  const session = authClient.useSession();
-  const userId = session.data?.user?.id;
-
-  return useQuery({
-    queryKey: ["subscriptions", userId],
-    queryFn: async () => {
-      // TODO: Implement subscription checking once Polar integration is re-added
-      return { activeSubscriptions: [] };
-    },
-    enabled: !!userId,
-    gcTime: 0,
-  });
+  const trpc = useTRPC();
+  return useQuery(trpc.subscriptions.getState.queryOptions());
 };
 
 export const useHasActiveSubscription = () => {
