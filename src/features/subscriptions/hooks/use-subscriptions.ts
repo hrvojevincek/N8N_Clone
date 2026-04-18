@@ -8,8 +8,8 @@ export const useSubscriptions = () => {
   return useQuery({
     queryKey: ["subscriptions", userId],
     queryFn: async () => {
-      const { data } = await authClient.customer.state();
-      return data;
+      // TODO: Implement subscription checking once Polar integration is re-added
+      return { activeSubscriptions: [] };
     },
     enabled: !!userId,
     gcTime: 0,

@@ -10,7 +10,6 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
-import { authClient } from "@/lib/auth-client";
 
 interface UpgradeModalProps {
   open: boolean;
@@ -30,9 +29,7 @@ export const UpgradeModal = ({ open, onOpenChange }: UpgradeModalProps) => {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={() => authClient.checkout({ slug: "n8n-clone" })}
-          >
+          <AlertDialogAction disabled>
             Upgrade Now
           </AlertDialogAction>
         </AlertDialogFooter>
