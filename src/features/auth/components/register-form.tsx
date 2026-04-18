@@ -87,22 +87,6 @@ export function RegisterForm() {
     );
   };
 
-  const signInWithGoogle = async () => {
-    await authClient.signIn.social(
-      {
-        provider: "google",
-        callbackURL: "/workflows",
-      },
-      {
-        onSuccess: () => {
-          router.push("/workflows");
-        },
-        onError: () => {
-          toast.error("Failed to sign in with Google");
-        },
-      }
-    );
-  };
 
   const isPending = form.formState.isSubmitting;
 
@@ -132,21 +116,6 @@ export function RegisterForm() {
                       height={20}
                     />
                     Continue with Github
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    type="button"
-                    disabled={isPending}
-                    onClick={signInWithGoogle}
-                  >
-                    <Image
-                      src="/logos/google.svg"
-                      alt="Google"
-                      width={20}
-                      height={20}
-                    />
-                    Continue with Google
                   </Button>
                 </div>
                 <div className="grid gap-6">
