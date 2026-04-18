@@ -95,6 +95,7 @@
     "@types/react-dom": "^19",
     "@types/toposort": "^2.0.7",
     "babel-plugin-react-compiler": "1.0.0",
+    "baseline-browser-mapping": "^2.10.0",
     "eslint": "^9",
     "eslint-config-next": "16.0.1",
     "inngest-cli": "^1.12.1",
