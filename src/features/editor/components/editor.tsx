@@ -4,8 +4,6 @@ import { ErrorView, LoadingView } from "@/components/entity-components";
 import { useSuspenseWorkflow } from "@/features/workflows/hooks/use-workflows";
 import {
   Background,
-  Controls,
-  MiniMap,
   Panel,
   ReactFlow,
   addEdge,
@@ -46,17 +44,17 @@ export const Editor = ({ workflowId }: { workflowId: string }) => {
   const onNodesChange = useCallback(
     (changes: NodeChange[]) =>
       setNodes((nodesSnapshot) => applyNodeChanges(changes, nodesSnapshot)),
-    []
+    [],
   );
   const onEdgesChange = useCallback(
     (changes: EdgeChange[]) =>
       setEdges((edgesSnapshot) => applyEdgeChanges(changes, edgesSnapshot)),
-    []
+    [],
   );
   const onConnect = useCallback(
     (params: Connection) =>
       setEdges((edgesSnapshot) => addEdge(params, edgesSnapshot)),
-    []
+    [],
   );
 
   const hasManualTrigger = useMemo(() => {
@@ -81,8 +79,6 @@ export const Editor = ({ workflowId }: { workflowId: string }) => {
         fitView
       >
         <Background />
-        <Controls />
-        <MiniMap />
         {hasManualTrigger && (
           <Panel position="bottom-center">
             <ExecuteWorkflowButton workflowId={workflowId} />

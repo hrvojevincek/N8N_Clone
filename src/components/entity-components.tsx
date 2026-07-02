@@ -202,7 +202,7 @@ interface EmptyViewProps extends StateViewProps {
 
 export const EmptyView = ({ message, onNew }: EmptyViewProps) => {
   return (
-    <Empty className="border border-dashed bg-white">
+    <Empty className="border border-dashed bg-card">
       <EmptyHeader>
         <EmptyMedia variant="icon">
           <PackageOpenIcon />
@@ -294,7 +294,7 @@ export const EntityItem = ({
         className={cn(
           "p-4 shadow-none cursor-pointer hover:shadow",
           isRemoving && "opacity-50 cursor-not-allowed",
-          className
+          className,
         )}
       >
         <CardContent className="flex flex-row items-center justify-between p-0">

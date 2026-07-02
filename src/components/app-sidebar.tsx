@@ -29,12 +29,12 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { useHasActiveSubscription } from "@/features/subscriptions/hooks/use-subscriptions";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const menuItems = [
   {
@@ -62,10 +62,24 @@ const menuItems = [
 const AppSidebar = () => {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const trpc = useTRPC();
   const { hasActiveSubscription, isLoading } = useHasActiveSubscription();
   const [helpOpen, setHelpOpen] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get("checkout") !== "success") return;
+
+    void queryClient.invalidateQueries(
+      trpc.subscriptions.getState.queryFilter()
+    );
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("checkout");
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname);
+  }, [searchParams, queryClient, trpc, router, pathname]);
 
   const createCheckout = useMutation(
     trpc.subscriptions.createCheckout.mutationOptions({
@@ -98,6 +112,7 @@ const AppSidebar = () => {
                 alt="N8N Clone"
                 width={30}
                 height={30}
+                style={{ width: "auto", height: "auto" }}
               />
               <span className="font-semibold text-sm">N8N Clone</span>
             </Link>
@@ -135,7 +150,7 @@ const AppSidebar = () => {
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
-          {!hasActiveSubscription && !isLoading && (
+          {!isLoading && !hasActiveSubscription && (
             <SidebarMenuItem>
               <SidebarMenuButton
                 onClick={() => createCheckout.mutate()}
@@ -148,7 +163,7 @@ const AppSidebar = () => {
               </SidebarMenuButton>
             </SidebarMenuItem>
           )}
-          {hasActiveSubscription && (
+          {!isLoading && hasActiveSubscription && (
             <SidebarMenuItem>
               <SidebarMenuButton
                 onClick={() => getPortalUrl.mutate()}
@@ -174,7 +189,9 @@ const AppSidebar = () => {
           <SidebarMenuItem>
             <SidebarMenuButton
               onClick={async () => {
-                queryClient.removeQueries({ queryKey: ["subscriptions"] });
+                queryClient.removeQueries(
+                  trpc.subscriptions.getState.queryFilter()
+                );
 
                 await authClient.signOut({
                   fetchOptions: {
@@ -202,10 +219,12 @@ const AppSidebar = () => {
             </DialogDescription>
           </DialogHeader>
           <ol className="space-y-3 text-sm text-muted-foreground list-decimal list-inside">
-            <li>
-              <span className="font-medium text-foreground">Subscribe to Pro</span>
-              {" "}&mdash; click &quot;Upgrade to Pro&quot; to unlock workflow creation
-            </li>
+            {!hasActiveSubscription && (
+              <li>
+                <span className="font-medium text-foreground">Subscribe to Pro</span>
+                {" "}&mdash; click &quot;Upgrade to Pro&quot; to unlock workflow creation
+              </li>
+            )}
             <li>
               <span className="font-medium text-foreground">Create a Workflow</span>
               {" "}&mdash; go to Workflows and click the + button

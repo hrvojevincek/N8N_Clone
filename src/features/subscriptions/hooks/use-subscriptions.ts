@@ -3,6 +3,7 @@ import { useTRPC } from "@/trpc/client";
 
 export const useSubscriptions = () => {
   const trpc = useTRPC();
+
   return useQuery(trpc.subscriptions.getState.queryOptions());
 };
 

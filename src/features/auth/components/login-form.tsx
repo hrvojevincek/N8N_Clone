@@ -25,6 +25,8 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { useQueryClient } from "@tanstack/react-query";
+import { useTRPC } from "@/trpc/client";
 
 const loginSchema = z.object({
   email: z.email("Please enter a valid email address"),
@@ -35,6 +37,14 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 export function LoginForm() {
   const router = useRouter();
+  const queryClient = useQueryClient();
+  const trpc = useTRPC();
+
+  const invalidateSubscriptionState = () => {
+    void queryClient.invalidateQueries(
+      trpc.subscriptions.getState.queryFilter()
+    );
+  };
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -52,6 +62,7 @@ export function LoginForm() {
       },
       {
         onSuccess: () => {
+          invalidateSubscriptionState();
           router.push("/workflows");
         },
         onError: () => {
@@ -71,6 +82,7 @@ export function LoginForm() {
       },
       {
         onSuccess: () => {
+          invalidateSubscriptionState();
           router.push("/workflows");
         },
         onError: (ctx) => {

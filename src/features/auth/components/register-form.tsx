@@ -25,6 +25,8 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { useQueryClient } from "@tanstack/react-query";
+import { useTRPC } from "@/trpc/client";
 
 const registerSchema = z
   .object({
@@ -41,6 +43,14 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export function RegisterForm() {
   const router = useRouter();
+  const queryClient = useQueryClient();
+  const trpc = useTRPC();
+
+  const invalidateSubscriptionState = () => {
+    void queryClient.invalidateQueries(
+      trpc.subscriptions.getState.queryFilter()
+    );
+  };
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -61,6 +71,7 @@ export function RegisterForm() {
       },
       {
         onSuccess: () => {
+          invalidateSubscriptionState();
           router.push("/workflows");
         },
         onError: (ctx) => {
@@ -78,6 +89,7 @@ export function RegisterForm() {
       },
       {
         onSuccess: () => {
+          invalidateSubscriptionState();
           router.push("/workflows");
         },
         onError: () => {

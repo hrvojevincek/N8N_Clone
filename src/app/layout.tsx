@@ -26,8 +26,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${notoSans.variable} antialiased`}>
+    <html lang="en" className={`${notoSans.variable} dark`} style={{ colorScheme: "dark" }}>
+      <body className="antialiased">
         <TRPCReactProvider>
           <NuqsAdapter>
             <Provider>
