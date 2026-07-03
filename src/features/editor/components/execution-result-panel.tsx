@@ -23,7 +23,6 @@ type AiResponsePayload = {
   aiResponse?: { text?: string };
 };
 
-/** Pull `{ variableName: { aiResponse: { text } } }` entries out of the output */
 const extractAiTexts = (output: Record<string, unknown>) => {
   const results: Array<{ variableName: string; text: string }> = [];
   for (const [key, value] of Object.entries(output)) {
@@ -43,8 +42,7 @@ const DemoBanner = () => {
         This ran on our demo key
       </p>
       <p className="text-muted-foreground">
-        Add your own free Gemini API key to build and run your own AI
-        workflows.
+        Add your own free Gemini API key to build and run your own AI workflows.
       </p>
       <Button asChild size="sm" variant="outline" className="w-full">
         <Link href="/credentials/new">
@@ -66,9 +64,6 @@ export const ExecutionResultPanel = ({
   const { data: workflow } = useSuspenseWorkflow(workflowId);
   const trpc = useTRPC();
 
-  // The event id atom is global, so a run from a previously opened workflow
-  // would otherwise make the panel pop up when entering a different editor.
-  // Reset it whenever the editor mounts a workflow.
   useEffect(() => {
     setEventId(null);
   }, [workflowId, setEventId]);
@@ -79,13 +74,9 @@ export const ExecutionResultPanel = ({
     }),
     enabled: !!eventId,
     refetchInterval: (query) => {
-      // Stop polling on request errors (e.g. signed out) — only keep polling
-      // while the run is genuinely pending
       if (query.state.error) {
         return false;
       }
-      // Safety cap: if no execution row ever appears (~2 min), give up
-      // instead of polling forever
       if (!query.state.data && query.state.dataUpdateCount > 80) {
         return false;
       }
@@ -98,7 +89,6 @@ export const ExecutionResultPanel = ({
     retry: false,
   });
 
-  // Flag finished runs so the sidebar shows a dot on "Executions"
   useEffect(() => {
     const status = execution?.status;
     if (

@@ -11,14 +11,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import {
-  CreditCardIcon,
-  FolderOpenIcon,
-  HistoryIcon,
-  KeyIcon,
-  StarIcon,
-  UserIcon,
-} from "lucide-react";
+import { FolderOpenIcon, HistoryIcon, KeyIcon, UserIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -28,17 +21,17 @@ const menuItems = [
     items: [
       {
         title: "Workflows",
-        url: "/login",
+        url: "/sign-up",
         icon: FolderOpenIcon,
       },
       {
         title: "Credentials",
-        url: "/login",
+        url: "/sign-up",
         icon: KeyIcon,
       },
       {
         title: "Executions",
-        url: "/login",
+        url: "/sign-up",
         icon: HistoryIcon,
       },
     ],
@@ -90,25 +83,6 @@ const PublicN8nSidebar = () => {
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              className="gap-x-4 h-10 px-4"
-              tooltip="Upgrade to Pro"
-            >
-              <StarIcon className="h-4 w-4" />
-              <span>Upgrade to Pro</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              className="gap-x-4 h-10 px-4"
-              tooltip="Billing Portal"
-            >
-              <CreditCardIcon className="h-4 w-4" />
-              <span>Billing Portal</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton asChild className="gap-x-4 h-10 px-4">
               <Link href="/login" prefetch>
