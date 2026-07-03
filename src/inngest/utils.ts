@@ -58,9 +58,16 @@ export const sendWorkflowExecution = async (data: {
   workflowId: string;
   [key: string]: unknown;
 }) => {
-  return inngest.send({
+  // Generate the event id ourselves: `event.id` inside the Inngest function
+  // (and therefore executions.inngestEventId) is this external id, while
+  // inngest.send() returns internal ULIDs that never match our DB rows.
+  const eventId = createId();
+
+  await inngest.send({
     name: "workflow/execute.workflow",
     data,
-    id: createId(),
+    id: eventId,
   });
+
+  return { eventId };
 };

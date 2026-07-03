@@ -3,16 +3,12 @@ import { db } from "@/db/client";
 import { credentials } from "@/db/schema";
 import { CredentialType } from "@/db/enums";
 import { encrypt } from "@/lib/encrypt";
-import {
-  createTRPCRouter,
-  premiumProcedure,
-  protectedProcedure,
-} from "@/trpc/init";
+import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { and, desc, eq, ilike, sql } from "drizzle-orm";
 import { z } from "zod";
 
 export const credentialsRouter = createTRPCRouter({
-  create: premiumProcedure
+  create: protectedProcedure
     .input(
       z.object({
         name: z.string().min(1, "Name is required"),

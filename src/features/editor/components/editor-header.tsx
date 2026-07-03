@@ -37,8 +37,8 @@ export const EditorSaveButton = ({ workflowId }: { workflowId: string }) => {
       edges: edges.map((edge) => ({
         source: edge.source,
         target: edge.target,
-        sourceHandle: edge.sourceHandle || "main",
-        targetHandle: edge.targetHandle || "main",
+        sourceHandle: edge.sourceHandle || "source-1",
+        targetHandle: edge.targetHandle || "target-1",
       })),
     });
   };

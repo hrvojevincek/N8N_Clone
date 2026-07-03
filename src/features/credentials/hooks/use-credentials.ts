@@ -31,6 +31,13 @@ export const useCreateCredential = () => {
         queryClient.invalidateQueries(
           trpc.credentials.getMany.queryOptions({})
         );
+        // Refresh credential dropdowns (e.g. the Gemini node dialog) so the
+        // new credential is selectable without a page reload
+        queryClient.invalidateQueries(
+          trpc.credentials.getByType.queryOptions({
+            type: data.type as CredentialType,
+          })
+        );
       },
       onError: (error) => {
         toast.error(`Failed to create credential: ${error.message}`);

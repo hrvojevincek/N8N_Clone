@@ -16,6 +16,7 @@ export const users = pgTable("user", {
   email: text("email").notNull(),
   emailVerified: boolean("emailVerified").notNull().default(false),
   image: text("image"),
+  ranDemo: boolean("ranDemo").notNull().default(false),
   createdAt: timestamp("createdAt", { mode: "date" }).defaultNow().notNull(),
   updatedAt: timestamp("updatedAt", { mode: "date" }).defaultNow().notNull(),
 });
@@ -80,6 +81,7 @@ export const workflows = pgTable(
   {
     id: text("id").primaryKey(),
     name: text("name").notNull(),
+    isDemo: boolean("isDemo").notNull().default(false),
     createdAt: timestamp("createdAt", { mode: "date" }).defaultNow().notNull(),
     updatedAt: timestamp("updatedAt", { mode: "date" }).defaultNow().notNull(),
     userId: text("userId")

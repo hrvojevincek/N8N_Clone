@@ -35,6 +35,8 @@ import { useHasActiveSubscription } from "@/features/subscriptions/hooks/use-sub
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
 import { useEffect, useState } from "react";
+import { useAtom } from "jotai";
+import { hasUnseenExecutionAtom } from "@/features/executions/store/atoms";
 
 const menuItems = [
   {
@@ -67,12 +69,22 @@ const AppSidebar = () => {
   const trpc = useTRPC();
   const { hasActiveSubscription, isLoading } = useHasActiveSubscription();
   const [helpOpen, setHelpOpen] = useState(false);
+  const [hasUnseenExecution, setHasUnseenExecution] = useAtom(
+    hasUnseenExecutionAtom,
+  );
+
+  // Clear the notification dot once the user opens the Executions page
+  useEffect(() => {
+    if (pathname.startsWith("/executions") && hasUnseenExecution) {
+      setHasUnseenExecution(false);
+    }
+  }, [pathname, hasUnseenExecution, setHasUnseenExecution]);
 
   useEffect(() => {
     if (searchParams.get("checkout") !== "success") return;
 
     void queryClient.invalidateQueries(
-      trpc.subscriptions.getState.queryFilter()
+      trpc.subscriptions.getState.queryFilter(),
     );
 
     const params = new URLSearchParams(searchParams.toString());
@@ -85,20 +97,20 @@ const AppSidebar = () => {
     trpc.subscriptions.createCheckout.mutationOptions({
       onSuccess: (data) => {
         if (data.url) {
-          window.location.href = data.url;
+          window.location.assign(data.url);
         }
       },
-    })
+    }),
   );
 
   const getPortalUrl = useMutation(
     trpc.subscriptions.getPortalUrl.mutationOptions({
       onSuccess: (data) => {
         if (data.url) {
-          window.location.href = data.url;
+          window.location.assign(data.url);
         }
       },
-    })
+    }),
   );
 
   return (
@@ -139,6 +151,12 @@ const AppSidebar = () => {
                       <Link href={item.url} prefetch>
                         <item.icon className="size-4" />
                         <span className="truncate">{item.title}</span>
+                        {item.url === "/executions" && hasUnseenExecution && (
+                          <span
+                            className="ml-auto size-2 shrink-0 rounded-full bg-blue-500 animate-pulse"
+                            aria-label="New execution results"
+                          />
+                        )}
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -159,7 +177,11 @@ const AppSidebar = () => {
                 tooltip="Upgrade to Pro"
               >
                 <StarIcon className="h-4 w-4" />
-                <span>{createCheckout.isPending ? "Redirecting..." : "Upgrade to Pro"}</span>
+                <span>
+                  {createCheckout.isPending
+                    ? "Redirecting..."
+                    : "Upgrade to Pro"}
+                </span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           )}
@@ -190,7 +212,7 @@ const AppSidebar = () => {
             <SidebarMenuButton
               onClick={async () => {
                 queryClient.removeQueries(
-                  trpc.subscriptions.getState.queryFilter()
+                  trpc.subscriptions.getState.queryFilter(),
                 );
 
                 await authClient.signOut({
@@ -221,29 +243,41 @@ const AppSidebar = () => {
           <ol className="space-y-3 text-sm text-muted-foreground list-decimal list-inside">
             {!hasActiveSubscription && (
               <li>
-                <span className="font-medium text-foreground">Subscribe to Pro</span>
-                {" "}&mdash; click &quot;Upgrade to Pro&quot; to unlock workflow creation
+                <span className="font-medium text-foreground">
+                  Subscribe to Pro
+                </span>{" "}
+                &mdash; click &quot;Upgrade to Pro&quot; to unlock workflow
+                creation
               </li>
             )}
             <li>
-              <span className="font-medium text-foreground">Create a Workflow</span>
-              {" "}&mdash; go to Workflows and click the + button
+              <span className="font-medium text-foreground">
+                Create a Workflow
+              </span>{" "}
+              &mdash; go to Workflows and click the + button
             </li>
             <li>
-              <span className="font-medium text-foreground">Choose a Trigger</span>
-              {" "}&mdash; every workflow starts with a trigger node (webhook, schedule, etc.)
+              <span className="font-medium text-foreground">
+                Choose a Trigger
+              </span>{" "}
+              &mdash; every workflow starts with a trigger node (webhook,
+              schedule, etc.)
             </li>
             <li>
-              <span className="font-medium text-foreground">Add Actions</span>
-              {" "}&mdash; connect action nodes to process data, call APIs, or send notifications
+              <span className="font-medium text-foreground">Add Actions</span>{" "}
+              &mdash; connect action nodes to process data, call APIs, or send
+              notifications
             </li>
             <li>
-              <span className="font-medium text-foreground">Add Credentials</span>
-              {" "}&mdash; go to Credentials to store API keys for your integrations
+              <span className="font-medium text-foreground">
+                Add Credentials
+              </span>{" "}
+              &mdash; go to Credentials to store API keys for your integrations
             </li>
             <li>
-              <span className="font-medium text-foreground">Execute</span>
-              {" "}&mdash; run your workflow manually or let the trigger fire automatically
+              <span className="font-medium text-foreground">Execute</span>{" "}
+              &mdash; run your workflow manually or let the trigger fire
+              automatically
             </li>
           </ol>
         </DialogContent>

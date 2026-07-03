@@ -2,21 +2,36 @@ import { PAGINATION } from "@/config/constants";
 import { sendWorkflowExecution } from "@/inngest/utils";
 import { db } from "@/db/client";
 import {
+  users,
   workflows,
   nodes as workflowNodes,
   connections as workflowConnections,
 } from "@/db/schema";
 import { NodeType } from "@/db/enums";
-import {
-  createTRPCRouter,
-  premiumProcedure,
-  protectedProcedure,
-} from "@/trpc/init";
+import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
+import { FREE_WORKFLOW_LIMIT, hasActiveSubscription } from "@/lib/subscription";
+import { getTemplate } from "../templates";
+import { createWorkflowFromTemplate } from "./create-from-template";
+import { TRPCError } from "@trpc/server";
 import type { Edge, Node } from "@xyflow/react";
 import { and, desc, eq, ilike, sql } from "drizzle-orm";
 import { createId } from "@paralleldrive/cuid2";
 import { generateSlug } from "random-word-slugs";
 import { z } from "zod";
+
+const ensureFreeWorkflowQuota = async (userId: string) => {
+  const [{ count }] = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(workflows)
+    .where(eq(workflows.userId, userId));
+
+  if (Number(count) >= FREE_WORKFLOW_LIMIT) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: `Free plan is limited to ${FREE_WORKFLOW_LIMIT} workflows. Upgrade to create more.`,
+    });
+  }
+};
 
 export const workflowsRouter = createTRPCRouter({
   execute: protectedProcedure
@@ -28,8 +43,8 @@ export const workflowsRouter = createTRPCRouter({
         .where(
           and(
             eq(workflows.id, input.id),
-            eq(workflows.userId, ctx.auth.user.id)
-          )
+            eq(workflows.userId, ctx.auth.user.id),
+          ),
         )
         .limit(1);
 
@@ -37,12 +52,51 @@ export const workflowsRouter = createTRPCRouter({
         throw new Error("Workflow not found");
       }
 
-      await sendWorkflowExecution({ workflowId: input.id });
+      // The demo workflow is one-shot on the sandbox key: once the user has
+      // spent their demo run, block re-runs of AI nodes that still have no
+      // credential, before dispatching (a mid-run failure reads as a bug).
+      if (workflow.isDemo) {
+        const [user] = await db
+          .select({ ranDemo: users.ranDemo })
+          .from(users)
+          .where(eq(users.id, ctx.auth.user.id))
+          .limit(1);
 
-      return workflow;
+        if (user?.ranDemo) {
+          const wfNodes = await db
+            .select()
+            .from(workflowNodes)
+            .where(eq(workflowNodes.workflowId, workflow.id));
+
+          const hasUncredentialedAiNode = wfNodes.some(
+            (node) =>
+              node.type === NodeType.GEMINI &&
+              !(node.data as Record<string, unknown>)?.credentialId,
+          );
+
+          if (hasUncredentialedAiNode) {
+            throw new TRPCError({
+              code: "PRECONDITION_FAILED",
+              message:
+                "Your demo run is used up. Add your own Gemini API key to keep running this workflow.",
+            });
+          }
+        }
+      }
+
+      const { eventId } = await sendWorkflowExecution({
+        workflowId: input.id,
+      });
+
+      return { ...workflow, inngestEventId: eventId };
     }),
 
-  create: premiumProcedure.mutation(async ({ ctx }) => {
+  create: protectedProcedure.mutation(async ({ ctx }) => {
+    const isPremium = await hasActiveSubscription(ctx.auth.user.id);
+    if (!isPremium) {
+      await ensureFreeWorkflowQuota(ctx.auth.user.id);
+    }
+
     return await db.transaction(async (tx) => {
       const [workflow] = await tx
         .insert(workflows)
@@ -70,6 +124,39 @@ export const workflowsRouter = createTRPCRouter({
     });
   }),
 
+  createFromTemplate: protectedProcedure
+    .input(z.object({ templateId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const template = getTemplate(input.templateId);
+
+      if (!template) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Template not found",
+        });
+      }
+
+      const isPremium = await hasActiveSubscription(ctx.auth.user.id);
+
+      if (template.premium && !isPremium) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "This template requires a Pro subscription.",
+        });
+      }
+
+      if (!isPremium) {
+        await ensureFreeWorkflowQuota(ctx.auth.user.id);
+      }
+
+      return await createWorkflowFromTemplate(ctx.auth.user.id, {
+        ...template,
+        // Gallery-created copies are regular workflows; only the signup seed
+        // is the one-shot demo.
+        isDemo: false,
+      });
+    }),
+
   update: protectedProcedure
     .input(
       z.object({
@@ -83,7 +170,7 @@ export const workflowsRouter = createTRPCRouter({
               y: z.number(),
             }),
             data: z.record(z.string(), z.unknown()).optional(),
-          })
+          }),
         ),
         edges: z.array(
           z.object({
@@ -91,9 +178,9 @@ export const workflowsRouter = createTRPCRouter({
             target: z.string(),
             sourceHandle: z.string(),
             targetHandle: z.string(),
-          })
+          }),
         ),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const { id, nodes, edges } = input;
@@ -102,7 +189,7 @@ export const workflowsRouter = createTRPCRouter({
         .select()
         .from(workflows)
         .where(
-          and(eq(workflows.id, id), eq(workflows.userId, ctx.auth.user.id))
+          and(eq(workflows.id, id), eq(workflows.userId, ctx.auth.user.id)),
         )
         .limit(1);
 
@@ -122,7 +209,7 @@ export const workflowsRouter = createTRPCRouter({
               type: (node.type as NodeType) ?? NodeType.INITIAL,
               position: node.position,
               data: node.data ?? {},
-            }))
+            })),
           );
         }
 
@@ -139,7 +226,7 @@ export const workflowsRouter = createTRPCRouter({
               toNodeId: edge.target,
               fromOutput: edge.sourceHandle || "main",
               toInput: edge.targetHandle || "main",
-            }))
+            })),
           );
         }
 
@@ -160,8 +247,8 @@ export const workflowsRouter = createTRPCRouter({
         .where(
           and(
             eq(workflows.id, input.id),
-            eq(workflows.userId, ctx.auth.user.id)
-          )
+            eq(workflows.userId, ctx.auth.user.id),
+          ),
         )
         .returning();
 
@@ -177,7 +264,7 @@ export const workflowsRouter = createTRPCRouter({
       z.object({
         id: z.string(),
         name: z.string().min(1),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const [updated] = await db
@@ -186,8 +273,8 @@ export const workflowsRouter = createTRPCRouter({
         .where(
           and(
             eq(workflows.id, input.id),
-            eq(workflows.userId, ctx.auth.user.id)
-          )
+            eq(workflows.userId, ctx.auth.user.id),
+          ),
         )
         .returning();
 
@@ -207,8 +294,8 @@ export const workflowsRouter = createTRPCRouter({
         .where(
           and(
             eq(workflows.id, input.id),
-            eq(workflows.userId, ctx.auth.user.id)
-          )
+            eq(workflows.userId, ctx.auth.user.id),
+          ),
         )
         .limit(1);
 
@@ -237,13 +324,18 @@ export const workflowsRouter = createTRPCRouter({
         id: connection.id,
         source: connection.fromNodeId,
         target: connection.toNodeId,
-        sourceHandle: connection.fromOutput,
-        targetHandle: connection.toInput,
+        // Normalize legacy "main" rows to the real Handle ids so React Flow
+        // doesn't log error #008 on every render
+        sourceHandle:
+          connection.fromOutput === "main" ? "source-1" : connection.fromOutput,
+        targetHandle:
+          connection.toInput === "main" ? "target-1" : connection.toInput,
       }));
 
       return {
         id: workflow.id,
         name: workflow.name,
+        isDemo: workflow.isDemo,
         nodes,
         edges,
       };
@@ -259,14 +351,14 @@ export const workflowsRouter = createTRPCRouter({
           .max(PAGINATION.MAX_PAGE_SIZE)
           .default(PAGINATION.DEFAULT_PAGE_SIZE),
         search: z.string().default(""),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const { page, pageSize, search } = input;
 
       const where = and(
         eq(workflows.userId, ctx.auth.user.id),
-        search ? ilike(workflows.name, `%${search}%`) : sql`true`
+        search ? ilike(workflows.name, `%${search}%`) : sql`true`,
       );
 
       const items = await db

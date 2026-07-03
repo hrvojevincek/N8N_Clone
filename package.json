@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "inngest:dev": "inngest-cli dev",
+    "inngest:dev": "inngest-cli dev -u http://localhost:3000/api/inngest --no-discovery --poll-interval 60",
     "dev:all": "dotenv -- mprocs",
     "ngrok:dev": "ngrok http --url=becoming-tick-early.ngrok-free.app 3000"
   },

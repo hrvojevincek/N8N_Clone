@@ -70,6 +70,14 @@ Required for subscription checkout and customer sync on signup. The app uses Pol
 | `POLAR_PRODUCT_ID`     | Product ID for the subscription plan             |
 | `POLAR_WEBHOOK_SECRET` | Webhook signing secret for `/api/webhooks/polar` |
 
+#### Optional — Demo workflow sandbox key
+
+New users get a seeded "Quick Start: Daily Weather Briefing" workflow that runs **once** on a server-side Gemini key (no credential needed). After that run, they're prompted to add their own free Gemini API key.
+
+| Variable          | Description                                                                     |
+| ----------------- | ------------------------------------------------------------------------------- |
+| `GOOGLE_GENERATIVE_AI_API_KEY` | Gemini API key used for demo runs (locked to `gemini-2.5-flash-lite`). Optional — without it, the demo workflow requires a user credential like any other workflow. |
+
 #### Production only — Inngest Cloud
 
 Not needed locally when `INNGEST_DEV=1` and `npm run inngest:dev` is running. Required when deploying workflows to Inngest Cloud:

@@ -98,8 +98,8 @@ export const CredentialForm = ({ initialData }: CredentialFormProps) => {
       );
     } else {
       createCredential.mutateAsync(values, {
-        onSuccess: (data) => {
-          router.push(`/credentials/${data.id}`);
+        onSuccess: () => {
+          router.push(`/credentials`);
         },
         onError: (error) => {
           handleError(error);

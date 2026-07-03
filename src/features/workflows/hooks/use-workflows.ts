@@ -113,10 +113,28 @@ export const useExecuteWorkflow = () => {
   return useMutation(
     trpc.workflows.execute.mutationOptions({
       onSuccess: (data) => {
-        toast.success(`Workflow "${data.name}" executed successfully`);
+        toast.success(`Workflow "${data.name}" started`);
       },
       onError: (error) => {
+        // Demo-spent runs open a dedicated dialog at the call site
+        if (error.data?.code === "PRECONDITION_FAILED") {
+          return;
+        }
         toast.error(`Failed to execute workflow: ${error.message}`);
+      },
+    })
+  );
+};
+
+export const useCreateWorkflowFromTemplate = () => {
+  const queryClient = useQueryClient();
+  const trpc = useTRPC();
+
+  return useMutation(
+    trpc.workflows.createFromTemplate.mutationOptions({
+      onSuccess: (data) => {
+        toast.success(`Workflow "${data.name}" created successfully`);
+        queryClient.invalidateQueries(trpc.workflows.getMany.queryOptions({}));
       },
     })
   );

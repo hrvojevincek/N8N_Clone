@@ -1,7 +1,7 @@
 import { NonRetriableError } from "inngest";
 import { inngest } from "./client";
 import { db } from "@/db/client";
-import { executions, workflows, nodes, connections } from "@/db/schema";
+import { executions, workflows, nodes, connections, users } from "@/db/schema";
 import { ExecutionStatus, NodeType } from "@/db/enums";
 import { topologicalSort } from "./utils";
 import { getExecutor } from "@/features/executions/lib/executor-registry";
@@ -128,6 +128,7 @@ export const executeWorkflow = inngest.createFunction(
       context = await executor({
         data: node.data as Record<string, unknown>,
         nodeId: node.id,
+        workflowId,
         context,
         step,
         publish,
@@ -159,6 +160,23 @@ export const executeWorkflow = inngest.createFunction(
           output: context,
         })
         .where(eq(executions.id, execution.id));
+    });
+
+    // The seeded demo workflow is one-shot on the sandbox key. Flip the flag
+    // only after a successful run so a transient failure doesn't consume it.
+    await step.run("mark-demo-ran", async () => {
+      const [workflow] = await db
+        .select({ isDemo: workflows.isDemo })
+        .from(workflows)
+        .where(eq(workflows.id, workflowId))
+        .limit(1);
+
+      if (workflow?.isDemo) {
+        await db
+          .update(users)
+          .set({ ranDemo: true })
+          .where(eq(users.id, userId));
+      }
     });
 
     return { workflowId, result: context };

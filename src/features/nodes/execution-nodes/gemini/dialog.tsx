@@ -50,7 +50,7 @@ const formSchema = z.object({
       /^[A-Za-z_$][A-Za-z0-9_$]*$/,
       "Variable name must start with a letter and contain only letters, numbers, and underscores"
     ),
-  credentialId: z.string().min(1, "Credential is required"),
+  credentialId: z.string().optional(),
   model: z.enum(AVAILABLE_MODELS),
   systemPrompt: z.string().optional(),
   userPrompt: z.string().min(1, "User prompt is required"),
@@ -144,7 +144,7 @@ export const GeminiDialog = ({
                   <FormLabel>Gemini Credential</FormLabel>
                   <Select
                     onValueChange={field.onChange}
-                    value={field.value}
+                    value={field.value ?? ""}
                     disabled={isLoadingCredentials || !credentials?.length}
                   >
                     <FormControl>
@@ -168,6 +168,10 @@ export const GeminiDialog = ({
                       ))}
                     </SelectContent>
                   </Select>
+                  <FormDescription>
+                    Required for your own workflows. The Quick Start demo runs
+                    once on our sandbox key without one.
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

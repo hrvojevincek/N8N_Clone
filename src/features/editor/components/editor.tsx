@@ -24,6 +24,7 @@ import { useSetAtom } from "jotai";
 import { editorAtom } from "../store/atoms";
 import { AddNodeButton } from "./add-node-button";
 import { ExecuteWorkflowButton } from "./execute-workflow-button";
+import { ExecutionResultPanel } from "./execution-result-panel";
 
 export const EditorLoading = () => {
   return <LoadingView message="Loading editor..." />;
@@ -86,6 +87,9 @@ export const Editor = ({ workflowId }: { workflowId: string }) => {
         )}
         <Panel position="top-right">
           <AddNodeButton />
+        </Panel>
+        <Panel position="bottom-right">
+          <ExecutionResultPanel workflowId={workflowId} />
         </Panel>
       </ReactFlow>
     </div>

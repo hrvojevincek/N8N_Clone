@@ -4,6 +4,7 @@ import {
   WorkflowsList,
   WorkflowsLoading,
 } from "@/features/workflows/components/workflows";
+import { WorkflowTemplatesSection } from "@/features/workflows/components/workflow-templates";
 import { workflowsParamsLoader } from "@/features/workflows/server/params-loader";
 import { prefetchWorkflows } from "@/features/workflows/server/prefetch";
 import { requireAuth } from "@/lib/auth-utils";
@@ -25,6 +26,9 @@ const Page = async ({ searchParams }: Props) => {
 
   return (
     <WorkflowsContainer>
+      <div className="mb-6">
+        <WorkflowTemplatesSection />
+      </div>
       <HydrateClient>
         <ErrorBoundary fallback={<WorkflowsError />}>
           <Suspense fallback={<WorkflowsLoading />}>

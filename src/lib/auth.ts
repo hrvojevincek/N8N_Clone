@@ -2,6 +2,8 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "@/db/client";
 import { polarClient } from "@/lib/polar";
+import { createWorkflowFromTemplate } from "@/features/workflows/server/create-from-template";
+import { DEMO_TEMPLATE_ID, getTemplate } from "@/features/workflows/templates";
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
@@ -31,6 +33,15 @@ export const auth = betterAuth({
             });
           } catch (error) {
             console.error("Failed to create Polar customer:", error);
+          }
+
+          try {
+            const demoTemplate = getTemplate(DEMO_TEMPLATE_ID);
+            if (demoTemplate) {
+              await createWorkflowFromTemplate(user.id, demoTemplate);
+            }
+          } catch (error) {
+            console.error("Failed to seed demo workflow:", error);
           }
         },
       },
